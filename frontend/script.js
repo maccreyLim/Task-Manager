@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isbnTitleInput = document.getElementById('isbn-title-input');
     const searchButton = document.getElementById('search-button');
     const addNewButton = document.getElementById('add-new-button');
+    const resetButton = document.getElementById('reset-data-button');
     const taskList = document.getElementById('task-list');
     const modal = document.getElementById('modal');
     const closeButton = document.querySelector('.close-button');
@@ -142,6 +143,21 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal(); // 책 정보 없이 모달 열기
     });
 
+    // 로컬 데이터 리셋 버튼 클릭 이벤트
+    resetButton.addEventListener('click', () => {
+        const password = prompt('로컬 데이터를 리셋하려면 비밀번호를 입력하세요:');
+        if (password === 'maccrey') {
+            if (confirm('정말로 모든 작업 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                localStorage.removeItem('brailleTasks');
+                tasks = [];
+                renderTasks();
+                alert('모든 데이터가 삭제되었습니다.');
+            }
+        } else if (password !== null) {
+            alert('비밀번호가 올바르지 않습니다.');
+        }
+    });
+
     // 모달 닫기 버튼 클릭 이벤트
     closeButton.addEventListener('click', closeModal);
 
@@ -241,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${task.currentStage === 'completed' || !task.stages[task.currentStage].assignedTo ? `<button class="assign-corrector-button" data-id="${task.id}" data-stage="${task.currentStage}">지정</button>` : ''}
                 </p>
                 <button data-id="${task.id}" class="update-progress-button">진행 상황 업데이트</button>
+                <button data-id="${task.id}" class="delete-task-button">삭제</button>
             `;
             taskList.appendChild(taskItem);
         });
@@ -253,6 +270,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (task) {
                     updateTaskProgress(task);
                 }
+            });
+        });
+
+        // 삭제 버튼 이벤트 리스너 추가
+        document.querySelectorAll('.delete-task-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const taskId = parseInt(event.target.dataset.id);
+                deleteTask(taskId);
             });
         });
 
@@ -286,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                          stageKey === 'correction2' ? '2차 교정' :
                          stageKey === 'correction3' ? '3차 교정' :
                          '점역';
-        const newAssignedTo = prompt(`${task.book.title}의 ${stageName} 담당자를 입력해주세요:`);
+        const newAssignedTo = prompt(`${stripHtmlTags(task.book.title)}의 ${stageName} 담당자를 입력해주세요:`);
 
         if (newAssignedTo) {
             task.stages[stageKey].assignedTo = newAssignedTo;
@@ -294,6 +319,18 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTasks(); // 변경 사항 반영을 위해 다시 렌더링
         } else if (newAssignedTo === '') {
             alert('담당자 이름을 입력해야 합니다.');
+        }
+    }
+
+    // 작업 삭제 함수
+    function deleteTask(taskId) {
+        const taskIndex = tasks.findIndex(t => t.id === taskId);
+        if (taskIndex > -1) {
+            if (confirm(`'${stripHtmlTags(tasks[taskIndex].book.title)}' 작업을 삭제하시겠습니까?`)) {
+                tasks.splice(taskIndex, 1);
+                saveTasks();
+                renderTasks();
+            }
         }
     }
 
