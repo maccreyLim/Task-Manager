@@ -16,13 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const transcriberInput = document.getElementById('transcriber');
     const enableTranscriberCheckbox = document.getElementById('enable-transcriber');
 
-    // TODO: 국립중앙도서관 API 키를 여기에 입력하세요.
+    // Progress Update Modal Elements
+    const progressUpdateModal = document.getElementById('progress-update-modal');
+    const progressUpdateForm = document.getElementById('progress-update-form');
+    const progressModalTitle = document.getElementById('progress-modal-title');
+    const progressTaskInfo = document.getElementById('progress-task-info');
+    const updatePageInput = document.getElementById('update-page-input');
+    const updateDatetimeInput = document.getElementById('update-datetime-input');
+    const progressModalCloseButton = progressUpdateModal.querySelector('.close-button');
+
     const apiKey = 'e080d32c1a94808682a5c4fe268ba6f9e5aedf09c936f44ecb51272e59287233';
 
-    let currentBook = null; // 현재 모달에 표시될 책 정보
-    let tasks = []; // 작업 목록을 저장할 배열
+    let currentBook = null;
+    let tasks = [];
+    let currentTaskForUpdate = null;
 
-    // --- Local Storage Functions ---
     function saveTasks() {
         localStorage.setItem('brailleTasks', JSON.stringify(tasks));
     }
@@ -32,29 +40,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedTasks) {
             tasks = JSON.parse(savedTasks);
         }
-        renderTasks(); // Add this line to render tasks after loading
+        renderTasks();
     }
 
-    // HTML 태그를 제거하는 헬퍼 함수
     function stripHtmlTags(html) {
         const div = document.createElement('div');
         div.innerHTML = html;
         return div.textContent || div.innerText || '';
     }
 
-    // --- End Local Storage Functions ---
+    loadTasks();
 
-    loadTasks(); // 페이지 로드 시 저장된 작업 불러오기 및 렌더링
-
-    // 점역자 체크박스 변경 이벤트
     enableTranscriberCheckbox.addEventListener('change', () => {
         transcriberInput.disabled = !enableTranscriberCheckbox.checked;
         if (transcriberInput.disabled) {
-            transcriberInput.value = ''; // 비활성화 시 값 초기화
+            transcriberInput.value = '';
         }
     });
 
-    // 모달 열기 함수
     function openModal(title = '신규 도서 등록', book = null) {
         modalTitle.textContent = title;
         bookInfoDiv.innerHTML = '';
@@ -81,22 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
-        // 폼 초기화 및 보이기
         taskForm.reset();
-        // 점역자 체크박스 및 입력 필드 초기화
-        enableTranscriberCheckbox.checked = true; // 기본적으로 체크
-        transcriberInput.disabled = false; // 기본적으로 활성화
-        taskForm.style.display = 'block'; // 폼 다시 보이게 설정
+        enableTranscriberCheckbox.checked = true;
+        transcriberInput.disabled = false;
+        taskForm.style.display = 'block';
         modal.style.display = 'flex';
     }
 
-    // 모달 닫기 함수
     function closeModal() {
         modal.style.display = 'none';
-        taskForm.style.display = 'block'; // 모달 닫을 때 폼 다시 보이게 설정
+        taskForm.style.display = 'block';
     }
 
-    // 국립중앙도서관 API를 이용한 도서 검색 함수
     async function searchBooks(query) {
         if (apiKey === 'YOUR_API_KEY') {
             alert('국립중앙도서관 API 키를 script.js 파일에 입력해주세요.');
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     author: book.authorInfo,
                     publisher: book.pubInfo,
                     isbn: book.isbn,
-                    totalPages: null // API가 페이지 정보를 제공하지 않음
+                    totalPages: null
                 };
                 openModal('도서 정보 확인 및 등록', bookInfo);
             } else {
@@ -128,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 검색 버튼 클릭 이벤트
     searchButton.addEventListener('click', () => {
         const query = isbnTitleInput.value.trim();
         if (query) {
@@ -138,12 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 신규 등록 버튼 클릭 이벤트
     addNewButton.addEventListener('click', () => {
-        openModal(); // 책 정보 없이 모달 열기
+        openModal();
     });
 
-    // 로컬 데이터 리셋 버튼 클릭 이벤트
     resetButton.addEventListener('click', () => {
         const password = prompt('로컬 데이터를 리셋하려면 비밀번호를 입력하세요:');
         if (password === 'maccrey') {
@@ -158,17 +154,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 모달 닫기 버튼 클릭 이벤트
     closeButton.addEventListener('click', closeModal);
 
-    // 모달 외부 클릭 시 닫기
     window.addEventListener('click', (event) => {
         if (event.target == modal) {
             closeModal();
         }
+        if (event.target == progressUpdateModal) {
+            closeProgressUpdateModal();
+        }
     });
 
-    // 작업 폼 제출 이벤트
     taskForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
@@ -192,25 +188,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const isTranscriberEnabled = enableTranscriberCheckbox.checked;
 
         const newTask = {
-            id: Date.now(), // 고유 ID
+            id: Date.now(),
             book: newBook,
             totalPages: totalPages,
             stages: {
                 correction1: { assignedTo: corrector1, history: [], status: 'pending' },
-                correction2: { assignedTo: corrector2, history: [], status: 'pending' }, // 항상 pending으로 시작
-                correction3: { assignedTo: corrector3, history: [], status: 'pending' }, // 항상 pending으로 시작
+                correction2: { assignedTo: corrector2, history: [], status: 'pending' },
+                correction3: { assignedTo: corrector3, history: [], status: 'pending' },
                 transcription: { assignedTo: transcriber, history: [], status: isTranscriberEnabled && transcriber ? 'pending' : 'not_applicable' }
             },
-            currentStage: 'correction1' // 초기 단계
+            currentStage: 'correction1'
         };
 
         tasks.push(newTask);
-        saveTasks(); // Save tasks after adding a new one
+        saveTasks();
         renderTasks();
         closeModal();
     });
 
-    // 작업 목록 렌더링 함수
     function renderTasks() {
         taskList.innerHTML = '';
         tasks.forEach(task => {
@@ -221,26 +216,21 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentStageName = '';
             let currentPageForDisplay = 0;
 
-            // 현재 진행 단계 및 진행률 계산
-            if (task.currentStage === 'correction1') {
-                currentStageName = '1차 교정';
-                currentPageForDisplay = task.stages.correction1.history.length > 0 ? task.stages.correction1.history[task.stages.correction1.history.length - 1].endPage : 0;
-                currentProgress = (currentPageForDisplay / task.totalPages) * 100;
-            } else if (task.currentStage === 'correction2') {
-                currentStageName = '2차 교정';
-                currentPageForDisplay = task.stages.correction2.history.length > 0 ? task.stages.correction2.history[task.stages.correction2.history.length - 1].endPage : 0;
-                currentProgress = (currentPageForDisplay / task.totalPages) * 100;
-            } else if (task.currentStage === 'correction3') {
-                currentStageName = '3차 교정';
-                currentPageForDisplay = task.stages.correction3.history.length > 0 ? task.stages.correction3.history[task.stages.correction3.history.length - 1].endPage : 0;
-                currentProgress = (currentPageForDisplay / task.totalPages) * 100;
-            } else if (task.currentStage === 'transcription') {
-                currentStageName = '점역';
-                currentPageForDisplay = task.stages.transcription.history.length > 0 ? task.stages.transcription.history[task.stages.transcription.history.length - 1].endPage : 0;
-                currentProgress = (currentPageForDisplay / task.totalPages) * 100;
-            } else if (task.currentStage === 'completed') { // Add this block
+            if (task.currentStage) {
+                const stage = task.stages[task.currentStage];
+                if (stage) {
+                    currentPageForDisplay = stage.history.length > 0 ? stage.history[stage.history.length - 1].endPage : 0;
+                    currentProgress = (currentPageForDisplay / task.totalPages) * 100;
+                }
+            }
+            
+            if (task.currentStage === 'correction1') currentStageName = '1차 교정';
+            else if (task.currentStage === 'correction2') currentStageName = '2차 교정';
+            else if (task.currentStage === 'correction3') currentStageName = '3차 교정';
+            else if (task.currentStage === 'transcription') currentStageName = '점역';
+            else if (task.currentStage === 'completed') {
                 currentStageName = '모든 작업 완료';
-                currentProgress = 100; // All stages completed, so 100% progress
+                currentProgress = 100;
                 currentPageForDisplay = task.totalPages;
             }
 
@@ -262,18 +252,16 @@ document.addEventListener('DOMContentLoaded', () => {
             taskList.appendChild(taskItem);
         });
 
-        // 진행 상황 업데이트 버튼 이벤트 리스너 추가
         document.querySelectorAll('.update-progress-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const taskId = parseInt(event.target.dataset.id);
                 const task = tasks.find(t => t.id === taskId);
                 if (task) {
-                    updateTaskProgress(task);
+                    openProgressUpdateModal(task);
                 }
             });
         });
 
-        // 삭제 버튼 이벤트 리스너 추가
         document.querySelectorAll('.delete-task-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const taskId = parseInt(event.target.dataset.id);
@@ -281,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // 작업 제목 클릭 이벤트 리스너 추가
         document.querySelectorAll('.task-title').forEach(titleElement => {
             titleElement.addEventListener('click', (event) => {
                 const taskId = parseInt(event.target.dataset.id);
@@ -292,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // 카드에서 교정자 지정 버튼 이벤트 리스너 추가
         document.querySelectorAll('.assign-corrector-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const taskId = parseInt(event.target.dataset.id);
@@ -305,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 카드에서 교정자 지정 함수
     function assignCorrectorFromCard(task, stageKey) {
         const stageName = stageKey === 'correction1' ? '1차 교정' :
                          stageKey === 'correction2' ? '2차 교정' :
@@ -316,13 +301,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newAssignedTo) {
             task.stages[stageKey].assignedTo = newAssignedTo;
             saveTasks();
-            renderTasks(); // 변경 사항 반영을 위해 다시 렌더링
+            renderTasks();
         } else if (newAssignedTo === '') {
             alert('담당자 이름을 입력해야 합니다.');
         }
     }
 
-    // 작업 삭제 함수
     function deleteTask(taskId) {
         const taskIndex = tasks.findIndex(t => t.id === taskId);
         if (taskIndex > -1) {
@@ -334,52 +318,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 작업 진행 상황 업데이트 함수
-    function updateTaskProgress(task) {
-        let stageKey = task.currentStage;
-        let lastCompletedPage = task.stages[stageKey].history.length > 0 ? task.stages[stageKey].history[task.stages[stageKey].history.length - 1].endPage : 0;
-        let assignedTo = task.stages[stageKey].assignedTo;
-
+    function openProgressUpdateModal(task) {
+        currentTaskForUpdate = task;
+        const stageKey = task.currentStage;
         const stageName = stageKey === 'correction1' ? '1차 교정' :
                          stageKey === 'correction2' ? '2차 교정' :
                          stageKey === 'correction3' ? '3차 교정' :
                          '점역';
+        const assignedTo = task.stages[stageKey].assignedTo;
+        const lastCompletedPage = task.stages[stageKey].history.length > 0 ? task.stages[stageKey].history[task.stages[stageKey].history.length - 1].endPage : 0;
 
-        // 현재 단계의 담당자가 비어있으면 입력받기
         if (!assignedTo) {
             const newAssignedTo = prompt(`${stageName} 담당자를 입력해주세요:`);
             if (newAssignedTo) {
                 task.stages[stageKey].assignedTo = newAssignedTo;
-                assignedTo = newAssignedTo;
-                saveTasks(); // 담당자 변경 저장
+                saveTasks();
+                renderTasks();
             } else {
                 alert('담당자 입력이 취소되었습니다. 진행 상황을 업데이트할 수 없습니다.');
-                return; // 담당자 입력 취소 시 함수 종료
+                return;
             }
         }
 
-        const newPage = parseInt(prompt(`현재 ${assignedTo}님(${stageName})의 진행 페이지를 입력하세요 (총 ${task.totalPages} 페이지, 현재 ${lastCompletedPage} 페이지):`));
+        progressModalTitle.textContent = `${stripHtmlTags(task.book.title)} - 진행 상황 업데이트`;
+        progressTaskInfo.innerHTML = `<strong>현재 단계:</strong> ${stageName}<br><strong>담당자:</strong> ${task.stages[stageKey].assignedTo}<br><strong>총 페이지:</strong> ${task.totalPages}<br><strong>현재 완료 페이지:</strong> ${lastCompletedPage}`;
 
-        if (!isNaN(newPage) && newPage >= lastCompletedPage && newPage <= task.totalPages) {
-            const dateTime = new Date().toLocaleString(); // 날짜와 시간 모두 포함
-            const startPage = lastCompletedPage + 1;
-            task.stages[stageKey].history.push({ date: dateTime, startPage: startPage, endPage: newPage });
-            saveTasks(); // Save tasks after updating progress
-            if (newPage === task.totalPages) {
-                task.stages[stageKey].status = 'completed';
-                alert(`${stripHtmlTags(task.book.title)}의 ${stageName} 단계가 완료되었습니다!`);
-                // 다음 단계로 전환
-                moveToNextStage(task);
-                // renderTasks() is called by moveToNextStage, so no need to call it here
-            } else {
-                renderTasks(); // Only render if stage is not completed (moveToNextStage will render)
-            }
-        } else if (!isNaN(newPage)) {
-            alert('유효한 페이지를 입력하거나, 현재 페이지보다 큰 값을 입력해주세요.');
-        }
+        updatePageInput.value = '';
+        updateDatetimeInput.value = new Date().toLocaleString('sv-SE').replace(' ', 'T');
+        updatePageInput.max = task.totalPages;
+        updatePageInput.min = lastCompletedPage + 1;
+
+        progressUpdateModal.style.display = 'flex';
     }
 
-    // 다음 단계로 전환 함수
+    function closeProgressUpdateModal() {
+        progressUpdateModal.style.display = 'none';
+    }
+
+    progressModalCloseButton.addEventListener('click', closeProgressUpdateModal);
+
+    progressUpdateForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const newPage = parseInt(updatePageInput.value);
+        const dateTime = updateDatetimeInput.value.trim();
+        const task = currentTaskForUpdate;
+        const stageKey = task.currentStage;
+        const lastCompletedPage = task.stages[stageKey].history.length > 0 ? task.stages[stageKey].history[task.stages[stageKey].history.length - 1].endPage : 0;
+
+        if (!dateTime) {
+            alert('날짜와 시간을 입력해주세요.');
+            return;
+        }
+
+        if (!isNaN(newPage) && newPage > lastCompletedPage && newPage <= task.totalPages) {
+            const startPage = lastCompletedPage + 1;
+            task.stages[stageKey].history.push({ date: new Date(dateTime).toLocaleString(), startPage: startPage, endPage: newPage });
+            saveTasks();
+
+            if (newPage === task.totalPages) {
+                const stageName = stageKey === 'correction1' ? '1차 교정' :
+                                 stageKey === 'correction2' ? '2차 교정' :
+                                 stageKey === 'correction3' ? '3차 교정' :
+                                 '점역';
+                task.stages[stageKey].status = 'completed';
+                alert(`${stripHtmlTags(task.book.title)}의 ${stageName} 단계가 완료되었습니다!`);
+                moveToNextStage(task);
+            } else {
+                renderTasks();
+            }
+            closeProgressUpdateModal();
+        } else {
+            alert('유효한 페이지를 입력하거나, 현재 페이지보다 큰 값을 입력해주세요.');
+        }
+    });
+
     function moveToNextStage(task) {
         const stagesOrder = ['correction1', 'correction2', 'correction3', 'transcription'];
         const currentIndex = stagesOrder.indexOf(task.currentStage);
@@ -404,16 +417,12 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`${stripHtmlTags(task.book.title)}의 모든 작업이 완료되었습니다!`);
             task.currentStage = 'completed';
         }
-        saveTasks(); // Save tasks after stage transition
-        renderTasks(); // Ensure renderTasks is called here
+        saveTasks();
+        renderTasks();
     }
 
-    // 작업 히스토리 표시 함수
     function showTaskHistory(task) {
-        // HTML 태그를 제거하여 순수한 텍스트만 추출
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = task.book.title;
-        const cleanTitle = tempDiv.textContent || tempDiv.innerText || '';
+        const cleanTitle = stripHtmlTags(task.book.title);
 
         modalTitle.textContent = `${cleanTitle} - 작업 히스토리`;
         bookInfoDiv.innerHTML = `
@@ -427,37 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4>진행 단계별 현황</h4>
             ${['correction1', 'correction2', 'correction3', 'transcription'].map(stageKey => {
                 const stage = task.stages[stageKey];
-                if (!stage) return ''; // Should not happen if stages are well-defined
+                if (!stage || stage.status === 'not_applicable') return '';
 
                 const stageName = stageKey === 'correction1' ? '1차 교정' :
                                  stageKey === 'correction2' ? '2차 교정' :
                                  stageKey === 'correction3' ? '3차 교정' :
                                  '점역';
-
-                // Logic to determine if the stage should be displayed
-                let shouldDisplay = false;
-                if (stage.status === 'not_applicable') {
-                    shouldDisplay = false;
-                } else if (stage.status === 'completed') {
-                    shouldDisplay = true;
-                } else if (stageKey === task.currentStage) {
-                    shouldDisplay = true;
-                } else {
-                    // Check if the previous stage is completed to show the next pending stage
-                    const stagesOrder = ['correction1', 'correction2', 'correction3', 'transcription'];
-                    const thisStageIndex = stagesOrder.indexOf(stageKey);
-                    if (thisStageIndex > 0) {
-                        const prevStageKey = stagesOrder[thisStageIndex - 1];
-                        const prevStage = task.stages[prevStageKey];
-                        if (prevStage && prevStage.status === 'completed') {
-                            shouldDisplay = true;
-                        }
-                    }
-                }
-
-                if (!shouldDisplay) {
-                    return '';
-                }
 
                 const historyList = stage.history.map(entry => `<li>${entry.date}: ${entry.startPage}~${entry.endPage} 페이지</li>`).join('');
                 const currentPages = stage.history.length > 0 ? stage.history[stage.history.length - 1].endPage : 0;
@@ -467,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }).join('')}
         `;
-        taskForm.style.display = 'none'; // 폼 숨기기
+        taskForm.style.display = 'none';
         modal.style.display = 'flex';
     }
 });

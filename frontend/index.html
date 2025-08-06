@@ -57,6 +57,21 @@
         </div>
     </div>
 
+    <div id="progress-update-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="progress-modal-title">진행 상황 업데이트</h2>
+            <form id="progress-update-form">
+                <p id="progress-task-info"></p>
+                <label for="update-page-input">진행 페이지:</label>
+                <input type="number" id="update-page-input" required>
+                <label for="update-datetime-input">작업 날짜 및 시간:</label>
+                <input type="datetime-local" id="update-datetime-input" required>
+                <button type="submit">업데이트</button>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
