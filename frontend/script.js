@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         progressTaskInfo.innerHTML = `<strong>현재 단계:</strong> ${stageName}<br><strong>담당자:</strong> ${task.stages[stageKey].assignedTo}<br><strong>총 페이지:</strong> ${task.totalPages}<br><strong>현재 완료 페이지:</strong> ${lastCompletedPage}`;
 
         updatePageInput.value = '';
-        updateDatetimeInput.value = new Date().toLocaleString('sv-SE').replace(' ', 'T');
+        updateDatetimeInput.value = '';
         updatePageInput.max = task.totalPages;
         updatePageInput.min = lastCompletedPage + 1;
 
@@ -361,15 +361,15 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         const newPage = parseInt(updatePageInput.value);
-        const dateTime = updateDatetimeInput.value.trim();
+        let dateTime = updateDatetimeInput.value.trim();
+        if (!dateTime) {
+            dateTime = new Date().toISOString();
+        }
         const task = currentTaskForUpdate;
         const stageKey = task.currentStage;
         const lastCompletedPage = task.stages[stageKey].history.length > 0 ? task.stages[stageKey].history[task.stages[stageKey].history.length - 1].endPage : 0;
 
-        if (!dateTime) {
-            alert('날짜와 시간을 입력해주세요.');
-            return;
-        }
+        
 
         if (!isNaN(newPage) && newPage > lastCompletedPage && newPage <= task.totalPages) {
             const startPage = lastCompletedPage + 1;
