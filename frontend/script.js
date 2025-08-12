@@ -494,6 +494,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        tasks.sort((a, b) => {
+            const aHasAssignee = a.currentStage !== 'completed' && a.stages[a.currentStage] && a.stages[a.currentStage].assignedTo;
+            const bHasAssignee = b.currentStage !== 'completed' && b.stages[b.currentStage] && b.stages[b.currentStage].assignedTo;
+    
+            if (aHasAssignee && !bHasAssignee) {
+                return -1;
+            }
+            if (!aHasAssignee && bHasAssignee) {
+                return 1;
+            }
+            return 0;
+        });
+
         tasks.forEach(task => {
             const taskItem = document.createElement('div');
             taskItem.classList.add('task-item');
