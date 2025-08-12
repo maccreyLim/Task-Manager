@@ -26,31 +26,254 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressModalCloseButton = progressUpdateModal.querySelector('.close-button');
 
     const apiKey = 'e080d32c1a94808682a5c4fe268ba6f9e5aedf09c936f44ecb51272e59287233';
+    const API_URL = 'http://172.30.1.40:3000/books';
 
     let currentBook = null;
     let tasks = [];
     let currentTaskForUpdate = null;
+    let serverStatus = 'unknown'; // 'online', 'offline', 'unknown'
 
-    function saveTasks() {
-        localStorage.setItem('brailleTasks', JSON.stringify(tasks));
-    }
-
-    function loadTasks() {
-        const savedTasks = localStorage.getItem('brailleTasks');
-        if (savedTasks) {
-            tasks = JSON.parse(savedTasks);
+    // 서버 연결 상태 확인
+    async function checkServerConnection() {
+        try {
+            console.log('Checking server connection...');
+            const response = await fetch(API_URL, { 
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000) // 5초 타임아웃
+            });
+            
+            if (response.ok) {
+                serverStatus = 'online';
+                console.log('Server is online');
+                return true;
+            } else {
+                serverStatus = 'offline';
+                console.log('Server responded but not OK:', response.status);
+                return false;
+            }
+        } catch (error) {
+            serverStatus = 'offline';
+            console.warn('Server connection failed:', error.message);
+            return false;
         }
-        renderTasks();
     }
 
+    // 상태 표시 업데이트
+    function updateStatusDisplay() {
+        let statusText = '';
+        let statusColor = '';
+        
+        switch(serverStatus) {
+            case 'online':
+                statusText = '서버 연결됨';
+                statusColor = '#4CAF50';
+                break;
+            case 'offline':
+                statusText = '서버 연결 실패';
+                statusColor = '#f44336';
+                break;
+            default:
+                statusText = '연결 상태 확인 중...';
+                statusColor = '#607d8b';
+        }
+        
+        // 헤더에 상태 표시 추가
+        const header = document.querySelector('header h1');
+        let statusSpan = document.querySelector('.server-status');
+        if (!statusSpan) {
+            statusSpan = document.createElement('span');
+            statusSpan.className = 'server-status';
+            statusSpan.style.fontSize = '0.6em';
+            statusSpan.style.marginLeft = '10px';
+            statusSpan.style.padding = '2px 8px';
+            statusSpan.style.borderRadius = '12px';
+            statusSpan.style.backgroundColor = 'rgba(255,255,255,0.2)';
+            header.appendChild(statusSpan);
+        }
+        statusSpan.textContent = statusText;
+        statusSpan.style.color = statusColor;
+    }
+
+    // 데이터 로드 함수
+    async function loadTasks() {
+        try {
+            console.log('Loading tasks from server...');
+            updateStatusDisplay();
+            
+            const isServerOnline = await checkServerConnection();
+            
+            if (isServerOnline) {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                tasks = Array.isArray(data) ? data : [];
+                console.log(`Loaded ${tasks.length} tasks from server`);
+            } else {
+                throw new Error('Server is not available');
+            }
+            
+            updateStatusDisplay();
+            renderTasks();
+            
+        } catch (error) {
+            console.error('Error in loadTasks:', error);
+            serverStatus = 'offline';
+            tasks = [];
+            
+            // 초기 데이터가 필요한 경우에만 제공
+            if (tasks.length === 0) {
+                console.log('Loading initial data...');
+                const initialData = await loadInitialData();
+                tasks = initialData;
+                console.log('Initialized with sample data');
+            }
+            
+            updateStatusDisplay();
+            renderTasks();
+            
+            alert('서버에 연결할 수 없습니다. 서버 상태를 확인해주세요.');
+        }
+    }
+
+    // 초기 데이터 로드 (bookworklist.json의 데이터 사용)
+    async function loadInitialData() {
+        // 이미 제공된 JSON 데이터를 사용
+        const initialTask = {
+            "id": 1754960400206,
+            "book": {
+                "title": "설민석의 삼국지 : 지금, 심플하게 <라이트 에디션>. 1, 답답한 세상, 희망을 꿈꾸다",
+                "author": "설민석[1970-] 지은이",
+                "publisher": "서울 : 세계사(세계사컨텐츠그룹), 20200624",
+                "isbn": "9788933871522",
+                "totalPages": null
+            },
+            "totalPages": 384,
+            "stages": {
+                "correction1": {
+                    "assignedTo": "김희연",
+                    "history": [],
+                    "status": "pending"
+                },
+                "correction2": {
+                    "assignedTo": "",
+                    "history": [],
+                    "status": "pending"
+                },
+                "correction3": {
+                    "assignedTo": "",
+                    "history": [],
+                    "status": "pending"
+                },
+                "transcription": {
+                    "assignedTo": "",
+                    "history": [],
+                    "status": "not_applicable"
+                }
+            },
+            "currentStage": "correction1"
+        };
+        
+        return [initialTask];
+    }
+
+    // 작업 저장/업데이트 함수
+    async function saveTask(task, isNewTask = false) {
+        try {
+            const method = isNewTask ? 'POST' : 'PUT';
+            const url = isNewTask ? API_URL : `${API_URL}/${task.id}`;
+            
+            console.log(`${method} request to:`, url);
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(task),
+                signal: AbortSignal.timeout(10000) // 10초 타임아웃
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error: ${response.status} ${response.statusText}. ${errorText}`);
+            }
+
+            const savedTask = await response.json();
+            console.log('Task saved to server:', savedTask);
+            
+            // 로컬 배열 업데이트
+            if (isNewTask) {
+                const existingIndex = tasks.findIndex(t => t.id === savedTask.id);
+                if (existingIndex === -1) {
+                    tasks.push(savedTask);
+                }
+            } else {
+                const index = tasks.findIndex(t => t.id === task.id);
+                if (index !== -1) {
+                    tasks[index] = savedTask;
+                }
+            }
+            
+            return savedTask;
+            
+        } catch (error) {
+            console.error('Error saving task:', error);
+            serverStatus = 'offline';
+            updateStatusDisplay();
+            throw error;
+        }
+    }
+
+    // 작업 삭제 함수
+    async function deleteTask(taskId) {
+        try {
+            const response = await fetch(`${API_URL}/${taskId}`, {
+                method: 'DELETE',
+                signal: AbortSignal.timeout(10000)
+            });
+
+            if (!response.ok && response.status !== 404) {
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+            
+            console.log('Task deleted from server');
+            
+            // 로컬 배열에서도 삭제
+            const index = tasks.findIndex(t => t.id === taskId);
+            if (index !== -1) {
+                tasks.splice(index, 1);
+                console.log('Task deleted locally');
+            }
+            
+            renderTasks();
+            
+        } catch (error) {
+            console.error('Error deleting task:', error);
+            serverStatus = 'offline';
+            updateStatusDisplay();
+            alert('작업 삭제에 실패했습니다: ' + error.message);
+        }
+    }
+
+    // HTML 태그 제거 함수
     function stripHtmlTags(html) {
+        if (!html) return '';
         const div = document.createElement('div');
         div.innerHTML = html;
         return div.textContent || div.innerText || '';
     }
 
+    // 초기 로드
     loadTasks();
 
+    // 점역자 체크박스 이벤트
     enableTranscriberCheckbox.addEventListener('change', () => {
         transcriberInput.disabled = !enableTranscriberCheckbox.checked;
         if (transcriberInput.disabled) {
@@ -58,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 모달 열기
     function openModal(title = '신규 도서 등록', book = null) {
         modalTitle.textContent = title;
         bookInfoDiv.innerHTML = '';
@@ -65,9 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (book) {
             bookInfoDiv.innerHTML = `
-                <p><strong>제목:</strong> ${book.title}</p>
-                <p><strong>저자:</strong> ${book.author || '정보 없음'}</p>
-                <p><strong>출판사:</strong> ${book.publisher || '정보 없음'}</p>
+                <p><strong>제목:</strong> ${stripHtmlTags(book.title)}</p>
+                <p><strong>저자:</strong> ${stripHtmlTags(book.author) || '정보 없음'}</p>
+                <p><strong>출판사:</strong> ${stripHtmlTags(book.publisher) || '정보 없음'}</p>
                 <p><strong>ISBN:</strong> ${book.isbn || '정보 없음'}</p>
             `;
         } else {
@@ -91,42 +315,55 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'flex';
     }
 
+    // 모달 닫기
     function closeModal() {
         modal.style.display = 'none';
         taskForm.style.display = 'block';
     }
 
+    // 도서 검색
     async function searchBooks(query) {
         if (apiKey === 'YOUR_API_KEY') {
             alert('국립중앙도서관 API 키를 script.js 파일에 입력해주세요.');
             return;
         }
 
-        const url = `https://www.nl.go.kr/NL/search/openApi/search.do?key=${apiKey}&apiType=json&srchTarget=total&kwd=${query}`;
+        const url = `https://www.nl.go.kr/NL/search/openApi/search.do?key=${apiKey}&apiType=json&srchTarget=total&kwd=${encodeURIComponent(query)}`;
 
         try {
-            const response = await fetch(url);
+            console.log('Searching books:', query);
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(10000)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API 오류: ${response.status}`);
+            }
+            
             const data = await response.json();
 
             if (data.result && data.result.length > 0) {
                 const book = data.result[0];
                 const bookInfo = {
-                    title: book.titleInfo,
-                    author: book.authorInfo,
-                    publisher: book.pubInfo,
-                    isbn: book.isbn,
+                    title: book.titleInfo || '',
+                    author: book.authorInfo || '',
+                    publisher: book.pubInfo || '',
+                    isbn: book.isbn || '',
                     totalPages: null
                 };
                 openModal('도서 정보 확인 및 등록', bookInfo);
             } else {
                 alert('검색 결과가 없습니다.');
+                openModal(); // 수동 입력 모달 열기
             }
         } catch (error) {
             console.error('Error fetching book data:', error);
             alert(`책 정보를 가져오는 데 실패했습니다: ${error.message}`);
+            openModal(); // 수동 입력 모달 열기
         }
     }
 
+    // 이벤트 리스너들
     searchButton.addEventListener('click', () => {
         const query = isbnTitleInput.value.trim();
         if (query) {
@@ -136,18 +373,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Enter 키로 검색
+    isbnTitleInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchButton.click();
+        }
+    });
+
     addNewButton.addEventListener('click', () => {
         openModal();
     });
 
-    resetButton.addEventListener('click', () => {
-        const password = prompt('로컬 데이터를 리셋하려면 비밀번호를 입력하세요:');
+    resetButton.addEventListener('click', async () => {
+        const password = prompt('모든 데이터를 리셋하려면 비밀번호를 입력하세요:');
         if (password === 'maccrey') {
             if (confirm('정말로 모든 작업 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                localStorage.removeItem('brailleTasks');
-                tasks = [];
-                renderTasks();
-                alert('모든 데이터가 삭제되었습니다.');
+                try {
+                    // 각 작업을 개별적으로 삭제
+                    const deletePromises = tasks.map(task => 
+                        fetch(`${API_URL}/${task.id}`, { method: 'DELETE' })
+                            .catch(error => console.error(`Failed to delete task ${task.id}:`, error))
+                    );
+                    
+                    await Promise.all(deletePromises);
+                    
+                    tasks = [];
+                    renderTasks();
+                    alert('모든 데이터가 삭제되었습니다.');
+                } catch (error) {
+                    console.error('Error resetting data:', error);
+                    tasks = [];
+                    renderTasks();
+                    alert('일부 데이터 삭제에 실패했지만 로컬 데이터는 초기화되었습니다.');
+                }
             }
         } else if (password !== null) {
             alert('비밀번호가 올바르지 않습니다.');
@@ -156,58 +414,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeButton.addEventListener('click', closeModal);
 
+    // 모달 외부 클릭시 닫기
     window.addEventListener('click', (event) => {
-        if (event.target == modal) {
+        if (event.target === modal) {
             closeModal();
         }
-        if (event.target == progressUpdateModal) {
+        if (event.target === progressUpdateModal) {
             closeProgressUpdateModal();
         }
     });
 
-    taskForm.addEventListener('submit', (event) => {
+    // 작업 등록 폼 제출
+    taskForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        const newBook = currentBook || {
-            title: document.getElementById('manual-title').value.trim(),
-            author: document.getElementById('manual-author').value.trim(),
-            publisher: document.getElementById('manual-publisher').value.trim(),
-            isbn: document.getElementById('manual-isbn').value.trim()
-        };
+        try {
+            const newBook = currentBook || {
+                title: document.getElementById('manual-title')?.value.trim() || '',
+                author: document.getElementById('manual-author')?.value.trim() || '',
+                publisher: document.getElementById('manual-publisher')?.value.trim() || '',
+                isbn: document.getElementById('manual-isbn')?.value.trim() || ''
+            };
 
-        if (!newBook.title) {
-            alert('책 제목은 필수입니다.');
-            return;
+            if (!newBook.title) {
+                alert('책 제목은 필수입니다.');
+                return;
+            }
+
+            const totalPages = parseInt(totalPagesInput.value);
+            if (isNaN(totalPages) || totalPages <= 0) {
+                alert('올바른 페이지 수를 입력해주세요.');
+                return;
+            }
+
+            const corrector1 = corrector1Input.value.trim();
+            if (!corrector1) {
+                alert('1차 교정자는 필수입니다.');
+                return;
+            }
+
+            const corrector2 = corrector2Input.value.trim();
+            const corrector3 = corrector3Input.value.trim();
+            const transcriber = transcriberInput.value.trim();
+            const isTranscriberEnabled = enableTranscriberCheckbox.checked;
+
+            const newTask = {
+                id: Date.now(),
+                book: newBook,
+                totalPages: totalPages,
+                stages: {
+                    correction1: { assignedTo: corrector1, history: [], status: 'pending' },
+                    correction2: { assignedTo: corrector2, history: [], status: 'pending' },
+                    correction3: { assignedTo: corrector3, history: [], status: 'pending' },
+                    transcription: { assignedTo: transcriber, history: [], status: isTranscriberEnabled && transcriber ? 'pending' : 'not_applicable' }
+                },
+                currentStage: 'correction1'
+            };
+
+            console.log('Creating new task:', newTask);
+            
+            await saveTask(newTask, true);
+            renderTasks();
+            closeModal();
+            
+            alert('새 작업이 등록되었습니다.');
+            
+        } catch (error) {
+            console.error('Error adding task:', error);
+            alert(`작업을 추가하는 데 실패했습니다: ${error.message}`);
         }
-
-        const totalPages = parseInt(totalPagesInput.value);
-        const corrector1 = corrector1Input.value.trim();
-        const corrector2 = corrector2Input.value.trim();
-        const corrector3 = corrector3Input.value.trim();
-        const transcriber = transcriberInput.value.trim();
-        const isTranscriberEnabled = enableTranscriberCheckbox.checked;
-
-        const newTask = {
-            id: Date.now(),
-            book: newBook,
-            totalPages: totalPages,
-            stages: {
-                correction1: { assignedTo: corrector1, history: [], status: 'pending' },
-                correction2: { assignedTo: corrector2, history: [], status: 'pending' },
-                correction3: { assignedTo: corrector3, history: [], status: 'pending' },
-                transcription: { assignedTo: transcriber, history: [], status: isTranscriberEnabled && transcriber ? 'pending' : 'not_applicable' }
-            },
-            currentStage: 'correction1'
-        };
-
-        tasks.push(newTask);
-        saveTasks();
-        renderTasks();
-        closeModal();
     });
 
+    // 작업 목록 렌더링
     function renderTasks() {
         taskList.innerHTML = '';
+        
+        if (tasks.length === 0) {
+            taskList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">등록된 작업이 없습니다.</p>';
+            return;
+        }
+        
         tasks.forEach(task => {
             const taskItem = document.createElement('div');
             taskItem.classList.add('task-item');
@@ -216,42 +502,58 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentStageName = '';
             let currentPageForDisplay = 0;
 
-            if (task.currentStage) {
+            if (task.currentStage && task.currentStage !== 'completed') {
                 const stage = task.stages[task.currentStage];
-                if (stage) {
-                    currentPageForDisplay = stage.history.length > 0 ? stage.history[stage.history.length - 1].endPage : 0;
+                if (stage && stage.history.length > 0) {
+                    currentPageForDisplay = stage.history[stage.history.length - 1].endPage;
                     currentProgress = (currentPageForDisplay / task.totalPages) * 100;
                 }
             }
             
-            if (task.currentStage === 'correction1') currentStageName = '1차 교정';
-            else if (task.currentStage === 'correction2') currentStageName = '2차 교정';
-            else if (task.currentStage === 'correction3') currentStageName = '3차 교정';
-            else if (task.currentStage === 'transcription') currentStageName = '점역';
-            else if (task.currentStage === 'completed') {
-                currentStageName = '모든 작업 완료';
-                currentProgress = 100;
-                currentPageForDisplay = task.totalPages;
+            switch(task.currentStage) {
+                case 'correction1':
+                    currentStageName = '1차 교정';
+                    break;
+                case 'correction2':
+                    currentStageName = '2차 교정';
+                    break;
+                case 'correction3':
+                    currentStageName = '3차 교정';
+                    break;
+                case 'transcription':
+                    currentStageName = '점역';
+                    break;
+                case 'completed':
+                    currentStageName = '모든 작업 완료';
+                    currentProgress = 100;
+                    currentPageForDisplay = task.totalPages;
+                    break;
+                default:
+                    currentStageName = '알 수 없음';
             }
+
+            const assignedTo = task.currentStage === 'completed' ? '-' : (task.stages[task.currentStage]?.assignedTo || '미정');
+            const showAssignButton = task.currentStage !== 'completed' && !task.stages[task.currentStage]?.assignedTo;
 
             taskItem.innerHTML = `
                 <h3 class="task-title" data-id="${task.id}" title="클릭하여 작업 히스토리 보기">${stripHtmlTags(task.book.title)}</h3>
-                <p><strong>ISBN:</strong> ${task.book.isbn}</p>
+                <p><strong>ISBN:</strong> ${task.book.isbn || '정보 없음'}</p>
                 <p><strong>총 페이지:</strong> ${task.totalPages}</p>
                 <p><strong>현재 단계:</strong> ${currentStageName}</p>
-                <p><strong>진행률:</strong> ${currentProgress.toFixed(2)}%</p>
+                <p><strong>진행률:</strong> ${currentProgress.toFixed(1)}% (${currentPageForDisplay}/${task.totalPages} 페이지)</p>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${currentProgress}%;"></div>
+                    <div class="progress-bar" style="width: ${Math.min(currentProgress, 100)}%;"></div>
                 </div>
-                <p><strong>${currentStageName} 담당자:</strong> ${task.currentStage === 'completed' ? '-' : task.stages[task.currentStage].assignedTo || '미정'}
-                    ${task.currentStage === 'completed' || !task.stages[task.currentStage].assignedTo ? `<button class="assign-corrector-button" data-id="${task.id}" data-stage="${task.currentStage}">지정</button>` : ''}
+                <p><strong>${currentStageName} 담당자:</strong> ${assignedTo}
+                    ${showAssignButton ? `<button class="assign-corrector-button" data-id="${task.id}" data-stage="${task.currentStage}">지정</button>` : ''}
                 </p>
-                <button data-id="${task.id}" class="update-progress-button">진행 상황 업데이트</button>
+                ${task.currentStage !== 'completed' ? `<button data-id="${task.id}" class="update-progress-button">진행 상황 업데이트</button>` : ''}
                 <button data-id="${task.id}" class="delete-task-button">삭제</button>
             `;
             taskList.appendChild(taskItem);
         });
 
+        // 이벤트 리스너 등록
         document.querySelectorAll('.update-progress-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const taskId = parseInt(event.target.dataset.id);
@@ -265,7 +567,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.delete-task-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const taskId = parseInt(event.target.dataset.id);
-                deleteTask(taskId);
+                const task = tasks.find(t => t.id === taskId);
+                if (task && confirm(`'${stripHtmlTags(task.book.title)}' 작업을 삭제하시겠습니까?`)) {
+                    deleteTask(taskId);
+                }
             });
         });
 
@@ -291,167 +596,415 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function assignCorrectorFromCard(task, stageKey) {
-        const stageName = stageKey === 'correction1' ? '1차 교정' :
-                         stageKey === 'correction2' ? '2차 교정' :
-                         stageKey === 'correction3' ? '3차 교정' :
-                         '점역';
+    // 담당자 지정
+    async function assignCorrectorFromCard(task, stageKey) {
+        const stageNames = {
+            'correction1': '1차 교정',
+            'correction2': '2차 교정',
+            'correction3': '3차 교정',
+            'transcription': '점역'
+        };
+        
+        const stageName = stageNames[stageKey] || stageKey;
         const newAssignedTo = prompt(`${stripHtmlTags(task.book.title)}의 ${stageName} 담당자를 입력해주세요:`);
 
-        if (newAssignedTo) {
-            task.stages[stageKey].assignedTo = newAssignedTo;
-            saveTasks();
-            renderTasks();
+        if (newAssignedTo && newAssignedTo.trim()) {
+            const originalAssignedTo = task.stages[stageKey].assignedTo;
+            task.stages[stageKey].assignedTo = newAssignedTo.trim();
+            
+            try {
+                await saveTask(task);
+                renderTasks();
+                alert('담당자가 지정되었습니다.');
+            } catch (error) {
+                console.error('Error assigning corrector:', error);
+                task.stages[stageKey].assignedTo = originalAssignedTo;
+                alert(`담당자 지정에 실패했습니다: ${error.message}`);
+            }
         } else if (newAssignedTo === '') {
             alert('담당자 이름을 입력해야 합니다.');
         }
     }
 
-    function deleteTask(taskId) {
-        const taskIndex = tasks.findIndex(t => t.id === taskId);
-        if (taskIndex > -1) {
-            if (confirm(`'${stripHtmlTags(tasks[taskIndex].book.title)}' 작업을 삭제하시겠습니까?`)) {
-                tasks.splice(taskIndex, 1);
-                saveTasks();
-                renderTasks();
-            }
-        }
-    }
-
+    // 진행 상황 업데이트 모달 열기
     function openProgressUpdateModal(task) {
         currentTaskForUpdate = task;
         const stageKey = task.currentStage;
-        const stageName = stageKey === 'correction1' ? '1차 교정' :
-                         stageKey === 'correction2' ? '2차 교정' :
-                         stageKey === 'correction3' ? '3차 교정' :
-                         '점역';
-        const assignedTo = task.stages[stageKey].assignedTo;
-        const lastCompletedPage = task.stages[stageKey].history.length > 0 ? task.stages[stageKey].history[task.stages[stageKey].history.length - 1].endPage : 0;
+        
+        if (!stageKey || stageKey === 'completed') {
+            alert('이미 완료된 작업입니다.');
+            return;
+        }
+        
+        const stageNames = {
+            'correction1': '1차 교정',
+            'correction2': '2차 교정',
+            'correction3': '3차 교정',
+            'transcription': '점역'
+        };
+        
+        const stageName = stageNames[stageKey] || stageKey;
+        const stage = task.stages[stageKey];
+        const assignedTo = stage?.assignedTo;
 
         if (!assignedTo) {
-            const newAssignedTo = prompt(`${stageName} 담당자를 입력해주세요:`);
-            if (newAssignedTo) {
-                task.stages[stageKey].assignedTo = newAssignedTo;
-                saveTasks();
-                renderTasks();
+            const newAssignedTo = prompt(`${stageName} 담당자를 먼저 입력해주세요:`);
+            if (newAssignedTo && newAssignedTo.trim()) {
+                task.stages[stageKey].assignedTo = newAssignedTo.trim();
+                saveTask(task).then(() => {
+                    renderTasks();
+                    openProgressUpdateModal(task);
+                }).catch(error => {
+                    console.error('Error saving assignee:', error);
+                    alert('담당자 저장에 실패했습니다.');
+                });
             } else {
                 alert('담당자 입력이 취소되었습니다. 진행 상황을 업데이트할 수 없습니다.');
                 return;
             }
+            return;
         }
 
+        const lastCompletedPage = stage.history.length > 0 ? stage.history[stage.history.length - 1].endPage : 0;
+
         progressModalTitle.textContent = `${stripHtmlTags(task.book.title)} - 진행 상황 업데이트`;
-        progressTaskInfo.innerHTML = `<strong>현재 단계:</strong> ${stageName}<br><strong>담당자:</strong> ${task.stages[stageKey].assignedTo}<br><strong>총 페이지:</strong> ${task.totalPages}<br><strong>현재 완료 페이지:</strong> ${lastCompletedPage}`;
+        progressTaskInfo.innerHTML = `
+            <strong>현재 단계:</strong> ${stageName}<br>
+            <strong>담당자:</strong> ${assignedTo}<br>
+            <strong>총 페이지:</strong> ${task.totalPages}<br>
+            <strong>현재 완료 페이지:</strong> ${lastCompletedPage}
+        `;
 
         updatePageInput.value = '';
         updateDatetimeInput.value = '';
         updatePageInput.max = task.totalPages;
         updatePageInput.min = lastCompletedPage + 1;
+        
+        // 현재 시간을 기본값으로 설정
+        const now = new Date();
+        const localISOTime = now.getFullYear() + '-' + 
+            String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+            String(now.getDate()).padStart(2, '0') + 'T' + 
+            String(now.getHours()).padStart(2, '0') + ':' + 
+            String(now.getMinutes()).padStart(2, '0');
+        updateDatetimeInput.value = localISOTime;
 
         progressUpdateModal.style.display = 'flex';
     }
 
+    // 진행 상황 업데이트 모달 닫기
     function closeProgressUpdateModal() {
         progressUpdateModal.style.display = 'none';
+        currentTaskForUpdate = null;
     }
 
     progressModalCloseButton.addEventListener('click', closeProgressUpdateModal);
 
-    progressUpdateForm.addEventListener('submit', (event) => {
+    // 진행 상황 업데이트 폼 제출
+    progressUpdateForm.addEventListener('submit', async (event) => {
         event.preventDefault();
+
+        if (!currentTaskForUpdate) {
+            alert('작업 정보를 찾을 수 없습니다.');
+            return;
+        }
 
         const newPage = parseInt(updatePageInput.value);
         let dateTime = updateDatetimeInput.value.trim();
+        
         if (!dateTime) {
             dateTime = new Date().toISOString();
+        } else {
+            dateTime = new Date(dateTime).toISOString();
         }
+
         const task = currentTaskForUpdate;
         const stageKey = task.currentStage;
-        const lastCompletedPage = task.stages[stageKey].history.length > 0 ? task.stages[stageKey].history[task.stages[stageKey].history.length - 1].endPage : 0;
-
+        const stage = task.stages[stageKey];
         
+        if (!stage) {
+            alert('현재 단계 정보를 찾을 수 없습니다.');
+            return;
+        }
 
-        if (!isNaN(newPage) && newPage > lastCompletedPage && newPage <= task.totalPages) {
-            const startPage = lastCompletedPage + 1;
-            task.stages[stageKey].history.push({ date: new Date(dateTime).toLocaleString(), startPage: startPage, endPage: newPage });
-            saveTasks();
+        const lastCompletedPage = stage.history.length > 0 ? stage.history[stage.history.length - 1].endPage : 0;
 
+        // 유효성 검사
+        if (isNaN(newPage)) {
+            alert('올바른 페이지 번호를 입력해주세요.');
+            return;
+        }
+
+        if (newPage <= lastCompletedPage) {
+            alert(`현재 완료된 페이지(${lastCompletedPage})보다 큰 값을 입력해주세요.`);
+            return;
+        }
+
+        if (newPage > task.totalPages) {
+            alert(`총 페이지(${task.totalPages})를 초과할 수 없습니다.`);
+            return;
+        }
+
+        // 진행 기록 추가
+        const startPage = lastCompletedPage + 1;
+        const newHistoryEntry = {
+            date: new Date(dateTime).toLocaleString('ko-KR'),
+            startPage: startPage,
+            endPage: newPage
+        };
+
+        // 백업용으로 기존 히스토리 저장
+        const originalHistory = [...stage.history];
+        const originalStatus = stage.status;
+
+        try {
+            stage.history.push(newHistoryEntry);
+
+            // 단계 완료 확인
             if (newPage === task.totalPages) {
-                const stageName = stageKey === 'correction1' ? '1차 교정' :
-                                 stageKey === 'correction2' ? '2차 교정' :
-                                 stageKey === 'correction3' ? '3차 교정' :
-                                 '점역';
-                task.stages[stageKey].status = 'completed';
+                stage.status = 'completed';
+            }
+
+            console.log('Updating task progress:', {
+                taskId: task.id,
+                stage: stageKey,
+                newPage: newPage,
+                isCompleted: newPage === task.totalPages
+            });
+
+            await saveTask(task);
+
+            // 단계 완료 시 다음 단계로 이동
+            if (newPage === task.totalPages) {
+                const stageNames = {
+                    'correction1': '1차 교정',
+                    'correction2': '2차 교정',
+                    'correction3': '3차 교정',
+                    'transcription': '점역'
+                };
+                
+                const stageName = stageNames[stageKey];
                 alert(`${stripHtmlTags(task.book.title)}의 ${stageName} 단계가 완료되었습니다!`);
-                moveToNextStage(task);
+                await moveToNextStage(task);
             } else {
                 renderTasks();
             }
+            
             closeProgressUpdateModal();
-        } else {
-            alert('유효한 페이지를 입력하거나, 현재 페이지보다 큰 값을 입력해주세요.');
+            
+        } catch (error) {
+            console.error('Error updating progress:', error);
+            
+            // 실패 시 원래 상태로 복원
+            stage.history = originalHistory;
+            stage.status = originalStatus;
+            
+            let errorMessage = '진행 상황 업데이트에 실패했습니다.';
+            if (error.message.includes('404')) {
+                errorMessage = '해당 작업을 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.';
+                // 데이터 다시 로드
+                loadTasks();
+            } else if (error.message.includes('500')) {
+                errorMessage = '서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+            } else if (error.message.includes('timeout')) {
+                errorMessage = '서버 응답 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.';
+            }
+            
+            alert(errorMessage + ` (${error.message})`);
         }
     });
 
-    function moveToNextStage(task) {
+    // 다음 단계로 이동
+    async function moveToNextStage(task) {
         const stagesOrder = ['correction1', 'correction2', 'correction3', 'transcription'];
         const currentIndex = stagesOrder.indexOf(task.currentStage);
 
         if (currentIndex < stagesOrder.length - 1) {
             let nextStageFound = false;
+            
             for (let i = currentIndex + 1; i < stagesOrder.length; i++) {
                 const nextStageKey = stagesOrder[i];
-                if (task.stages[nextStageKey].status !== 'not_applicable') {
+                const nextStage = task.stages[nextStageKey];
+                
+                if (nextStage && nextStage.status !== 'not_applicable') {
                     task.currentStage = nextStageKey;
-                    task.stages[nextStageKey].status = 'pending';
-                    alert(`${stripHtmlTags(task.book.title)}의 다음 단계인 ${nextStageKey}가 시작됩니다.`);
+                    nextStage.status = 'pending';
+                    
+                    const stageNames = {
+                        'correction1': '1차 교정',
+                        'correction2': '2차 교정',
+                        'correction3': '3차 교정',
+                        'transcription': '점역'
+                    };
+                    
+                    alert(`${stripHtmlTags(task.book.title)}의 다음 단계인 ${stageNames[nextStageKey]}가 시작됩니다.`);
                     nextStageFound = true;
                     break;
                 }
             }
+            
             if (!nextStageFound) {
-                alert(`${stripHtmlTags(task.book.title)}의 모든 작업이 완료되었습니다!`);
                 task.currentStage = 'completed';
+                alert(`${stripHtmlTags(task.book.title)}의 모든 작업이 완료되었습니다!`);
             }
         } else {
-            alert(`${stripHtmlTags(task.book.title)}의 모든 작업이 완료되었습니다!`);
             task.currentStage = 'completed';
+            alert(`${stripHtmlTags(task.book.title)}의 모든 작업이 완료되었습니다!`);
         }
-        saveTasks();
-        renderTasks();
+        
+        try {
+            await saveTask(task);
+            renderTasks();
+        } catch (error) {
+            console.error('Error moving to next stage:', error);
+            alert('다음 단계로 이동하는 데 실패했습니다: ' + error.message);
+        }
     }
 
+    // 작업 히스토리 표시
     function showTaskHistory(task) {
         const cleanTitle = stripHtmlTags(task.book.title);
 
         modalTitle.textContent = `${cleanTitle} - 작업 히스토리`;
+        
+        const stageNames = {
+            'correction1': '1차 교정',
+            'correction2': '2차 교정',
+            'correction3': '3차 교정',
+            'transcription': '점역'
+        };
+
         bookInfoDiv.innerHTML = `
             <h4>도서 정보</h4>
-            <p><strong>제목:</strong> ${task.book.title}</p>
-            <p><strong>저자:</strong> ${task.book.author || '정보 없음'}</p>
-            <p><strong>출판사:</strong> ${task.book.publisher || '정보 없음'}</p>
+            <p><strong>제목:</strong> ${stripHtmlTags(task.book.title)}</p>
+            <p><strong>저자:</strong> ${stripHtmlTags(task.book.author) || '정보 없음'}</p>
+            <p><strong>출판사:</strong> ${stripHtmlTags(task.book.publisher) || '정보 없음'}</p>
             <p><strong>ISBN:</strong> ${task.book.isbn || '정보 없음'}</p>
             <p><strong>총 페이지:</strong> ${task.totalPages}</p>
             <hr>
             <h4>진행 단계별 현황</h4>
-            ${['correction1', 'correction2', 'correction3', 'transcription'].map(stageKey => {
+            ${Object.keys(stageNames).map(stageKey => {
                 const stage = task.stages[stageKey];
                 if (!stage || stage.status === 'not_applicable') return '';
 
-                const stageName = stageKey === 'correction1' ? '1차 교정' :
-                                 stageKey === 'correction2' ? '2차 교정' :
-                                 stageKey === 'correction3' ? '3차 교정' :
-                                 '점역';
-
-                const historyList = stage.history.map(entry => `<li>${entry.date}: ${entry.startPage}~${entry.endPage} 페이지</li>`).join('');
+                const stageName = stageNames[stageKey];
                 const currentPages = stage.history.length > 0 ? stage.history[stage.history.length - 1].endPage : 0;
+                const progressPercent = ((currentPages / task.totalPages) * 100).toFixed(1);
+                
+                let statusText = '';
+                switch(stage.status) {
+                    case 'pending':
+                        statusText = task.currentStage === stageKey ? '진행 중' : '대기';
+                        break;
+                    case 'completed':
+                        statusText = '완료';
+                        break;
+                    default:
+                        statusText = stage.status;
+                }
+
+                const historyList = stage.history.map(entry => 
+                    `<li>${entry.date}: ${entry.startPage}~${entry.endPage} 페이지</li>`
+                ).join('');
+
                 return `
-                    <p><strong>${stageName} (${stage.assignedTo || '미정'})</strong>: ${currentPages} / ${task.totalPages} 페이지 (${(currentPages / task.totalPages * 100).toFixed(2)}%) - ${stage.status === 'pending' ? '진행 중' : stage.status === 'completed' ? '완료' : '대기'}</p>
-                    ${historyList ? `<ul>${historyList}</ul>` : '<p>진행 기록 없음</p>'}
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                        <p><strong>${stageName}</strong></p>
+                        <p>담당자: ${stage.assignedTo || '미정'}</p>
+                        <p>진행률: ${currentPages} / ${task.totalPages} 페이지 (${progressPercent}%)</p>
+                        <p>상태: ${statusText}</p>
+                        ${historyList ? `<strong>진행 기록:</strong><ul style="margin-top: 5px;">${historyList}</ul>` : '<p style="color: #666;">진행 기록 없음</p>'}
+                    </div>
                 `;
             }).join('')}
+            ${task.currentStage === 'completed' ? '<p style="color: #4CAF50; font-weight: bold; text-align: center;">🎉 모든 작업이 완료되었습니다! 🎉</p>' : ''}
         `;
+        
         taskForm.style.display = 'none';
         modal.style.display = 'flex';
     }
+
+    // 서버 연결 상태 주기적 확인 (5분마다)
+    setInterval(async () => {
+        const isOnline = await checkServerConnection();
+        if (isOnline && serverStatus === 'offline') {
+            serverStatus = 'online';
+            updateStatusDisplay();
+            console.log('Server is back online');
+            
+            // 서버가 다시 온라인이 되면 데이터 다시 로드
+            const shouldReload = confirm('서버가 다시 연결되었습니다. 최신 데이터를 불러오시겠습니까?');
+            if (shouldReload) {
+                await loadTasks();
+            }
+        }
+    }, 300000); // 5분
+
+    // 네트워크 상태 변경 감지
+    window.addEventListener('online', async () => {
+        console.log('Network back online');
+        const isServerOnline = await checkServerConnection();
+        if (isServerOnline && serverStatus === 'offline') {
+            serverStatus = 'online';
+            updateStatusDisplay();
+        }
+    });
+
+    window.addEventListener('offline', () => {
+        console.log('Network went offline');
+        if (serverStatus === 'online') {
+            serverStatus = 'offline';
+            updateStatusDisplay();
+        }
+    });
 });
+    async function syncLocalDataToServer() {
+        try {
+            const localTasks = loadFromLocalStorage();
+            for (const task of localTasks) {
+                try {
+                    await saveTask(task, false); // 기존 작업으로 업데이트 시도
+                    console.log(`Synced task ${task.id} to server`);
+                } catch (error) {
+                    if (error.message.includes('404')) {
+                        // 서버에 없는 작업이면 새로 생성
+                        await saveTask(task, true);
+                        console.log(`Created new task ${task.id} on server`);
+                    } else {
+                        console.error(`Failed to sync task ${task.id}:`, error);
+                    }
+                }
+            }
+            alert('로컬 데이터가 서버에 동기화되었습니다.');
+            await loadTasks(); // 서버에서 최신 데이터 다시 로드
+        } catch (error) {
+            console.error('Error syncing data to server:', error);
+            alert('데이터 동기화 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 페이지 언로드 시 데이터 저장
+    window.addEventListener('beforeunload', () => {
+        if (tasks.length > 0) {
+            saveToLocalStorage();
+        }
+    });
+
+    // 네트워크 상태 변경 감지
+    window.addEventListener('online', async () => {
+        console.log('Network back online');
+        const isServerOnline = await checkServerConnection();
+        if (isServerOnline && useLocalStorage) {
+            useLocalStorage = false;
+            updateStatusDisplay();
+        }
+    });
+
+    window.addEventListener('offline', () => {
+        console.log('Network went offline');
+        if (!useLocalStorage) {
+            useLocalStorage = true;
+            serverStatus = 'offline';
+            updateStatusDisplay();
+        }
+    });
