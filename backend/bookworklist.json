@@ -48,7 +48,7 @@
         "status": "completed"
       },
       "correction3": {
-        "assignedTo": "",
+        "assignedTo": "백기욱",
         "history": [],
         "status": "pending"
       },
@@ -134,7 +134,7 @@
   {
     "id": "1754976845592",
     "book": {
-      "title": "<span class=\"searching_txt\">설민석의</span> <span class=\"searching_txt\">삼국지</span> : 지금, 심플하게 &lt;라이트 에디션&gt;. <span class=\"searching_txt\">1</span>, 답답한 세상, 희망을 꿈꾸다",
+      "title": "<span class=\"searching_txt\">설민석의</span> <span class=\"searching_txt\">삼국지</span> : 지금, 심플하게 <라이트 에디션>.<span class=\"searching_txt\">1</span>, 답답한 세상, 희망을 꿈꾸다",
       "author": "<span class=\"searching_txt\">설민석</span>[<span class=\"searching_txt\">1</span>970-] 지은이",
       "publisher": "서울 : 세계사(세계사컨텐츠그룹), 20200624",
       "isbn": "9788933871522",
@@ -165,6 +165,11 @@
             "date": "2025. 8. 11. 오후 5:45:00",
             "startPage": 1,
             "endPage": 54
+          },
+          {
+            "date": "2025. 8. 12. 오후 5:45:00",
+            "startPage": 55,
+            "endPage": 124
           }
         ],
         "status": "pending"
@@ -185,7 +190,7 @@
   {
     "id": "1754976981711",
     "book": {
-      "title": "<span class=\"searching_txt\">설민석의</span> <span class=\"searching_txt\">삼국지</span> : 지금, 심플하게 &lt;라이트 에디션&gt;. <span class=\"searching_txt\">2</span>, 혼란한 세상, 끝까지 맞서다",
+      "title": "<span class=\"searching_txt\">설민석의</span> <span class=\"searching_txt\">삼국지</span> : 지금, 심플하게 <라이트 에디션>.<span class=\"searching_txt\">2</span>, 혼란한 세상, 끝까지 맞서다",
       "author": "<span class=\"searching_txt\">설민석</span>[1970-] 지은이",
       "publisher": "서울 : 세계사(세계사컨텐츠그룹), <span class=\"searching_txt\">2</span>0<span class=\"searching_txt\">2</span>006<span class=\"searching_txt\">2</span>4",
       "isbn": "9788933871539",
@@ -292,5 +297,55 @@
       }
     },
     "currentStage": "correction3"
+  },
+  {
+    "id": "1755050512702",
+    "book": {
+      "title": "고구려 7: 동백과 한란",
+      "author": "김진명",
+      "publisher": "이타",
+      "isbn": "9791197063275"
+    },
+    "totalPages": 358,
+    "stages": {
+      "correction1": {
+        "assignedTo": "윤성희",
+        "history": [
+          {
+            "date": "2025. 7. 17. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 25. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 358
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 8. 6. 오전 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          }
+        ],
+        "status": "pending"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction2"
   }
 ]

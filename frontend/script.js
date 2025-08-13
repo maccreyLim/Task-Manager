@@ -208,19 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedTask = await response.json();
             console.log('Task saved to server:', savedTask);
             
-            // 로컬 배열 업데이트
-            if (isNewTask) {
-                const existingIndex = tasks.findIndex(t => t.id === savedTask.id);
-                if (existingIndex === -1) {
-                    tasks.push(savedTask);
-                }
-            } else {
-                const index = tasks.findIndex(t => t.id === task.id);
-                if (index !== -1) {
-                    tasks[index] = savedTask;
-                }
-            }
-            
             return savedTask;
             
         } catch (error) {
@@ -309,8 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         taskForm.reset();
-        enableTranscriberCheckbox.checked = true;
-        transcriberInput.disabled = false;
+        enableTranscriberCheckbox.checked = false;
+        transcriberInput.disabled = true;
         taskForm.style.display = 'block';
         modal.style.display = 'flex';
     }
@@ -459,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isTranscriberEnabled = enableTranscriberCheckbox.checked;
 
             const newTask = {
-                id: Date.now(),
+                id: Date.now().toString(), // ID를 문자열로 생성
                 book: newBook,
                 totalPages: totalPages,
                 stages: {
@@ -473,7 +460,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Creating new task:', newTask);
             
-            await saveTask(newTask, true);
+            const savedTask = await saveTask(newTask, true);
+            
+            // 로컬 배열에 새 작업 추가
+            tasks.push(savedTask);
+
             renderTasks();
             closeModal();
             
@@ -565,49 +556,38 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             taskList.appendChild(taskItem);
         });
+    }
 
-        // 이벤트 리스너 등록
-        document.querySelectorAll('.update-progress-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const taskId = parseInt(event.target.dataset.id);
-                const task = tasks.find(t => t.id === taskId);
-                if (task) {
-                    openProgressUpdateModal(task);
-                }
-            });
-        });
+    // 이벤트 위임을 사용하여 taskList에 대한 클릭 이벤트 처리
+    taskList.addEventListener('click', (event) => {
+        const target = event.target;
+        const taskId = target.dataset.id;
+        const task = tasks.find(t => t.id === taskId);
 
-        document.querySelectorAll('.delete-task-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const taskId = parseInt(event.target.dataset.id);
-                const task = tasks.find(t => t.id === taskId);
+        if (target.classList.contains('update-progress-button')) {
+            if (task) {
+                openProgressUpdateModal(task);
+            }
+        } else if (target.classList.contains('delete-task-button')) {
+            const password = prompt('작업을 삭제하려면 비밀번호를 입력하세요:');
+            if (password === 'maccrey') {
                 if (task && confirm(`'${stripHtmlTags(task.book.title)}' 작업을 삭제하시겠습니까?`)) {
                     deleteTask(taskId);
                 }
-            });
-        });
-
-        document.querySelectorAll('.task-title').forEach(titleElement => {
-            titleElement.addEventListener('click', (event) => {
-                const taskId = parseInt(event.target.dataset.id);
-                const task = tasks.find(t => t.id === taskId);
-                if (task) {
-                    showTaskHistory(task);
-                }
-            });
-        });
-
-        document.querySelectorAll('.assign-corrector-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const taskId = parseInt(event.target.dataset.id);
-                const stageKey = event.target.dataset.stage;
-                const task = tasks.find(t => t.id === taskId);
-                if (task) {
-                    assignCorrectorFromCard(task, stageKey);
-                }
-            });
-        });
-    }
+            } else if (password !== null) {
+                alert('비밀번호가 올바르지 않습니다.');
+            }
+        } else if (target.classList.contains('task-title')) {
+            if (task) {
+                showTaskHistory(task);
+            }
+        } else if (target.classList.contains('assign-corrector-button')) {
+            const stageKey = target.dataset.stage;
+            if (task) {
+                assignCorrectorFromCard(task, stageKey);
+            }
+        }
+    });
 
     // 담당자 지정
     async function assignCorrectorFromCard(task, stageKey) {
@@ -971,53 +951,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-    async function syncLocalDataToServer() {
-        try {
-            const localTasks = loadFromLocalStorage();
-            for (const task of localTasks) {
-                try {
-                    await saveTask(task, false); // 기존 작업으로 업데이트 시도
-                    console.log(`Synced task ${task.id} to server`);
-                } catch (error) {
-                    if (error.message.includes('404')) {
-                        // 서버에 없는 작업이면 새로 생성
-                        await saveTask(task, true);
-                        console.log(`Created new task ${task.id} on server`);
-                    } else {
-                        console.error(`Failed to sync task ${task.id}:`, error);
-                    }
-                }
-            }
-            alert('로컬 데이터가 서버에 동기화되었습니다.');
-            await loadTasks(); // 서버에서 최신 데이터 다시 로드
-        } catch (error) {
-            console.error('Error syncing data to server:', error);
-            alert('데이터 동기화 중 오류가 발생했습니다.');
-        }
-    }
-
-    // 페이지 언로드 시 데이터 저장
-    window.addEventListener('beforeunload', () => {
-        if (tasks.length > 0) {
-            saveToLocalStorage();
-        }
-    });
-
-    // 네트워크 상태 변경 감지
-    window.addEventListener('online', async () => {
-        console.log('Network back online');
-        const isServerOnline = await checkServerConnection();
-        if (isServerOnline && useLocalStorage) {
-            useLocalStorage = false;
-            updateStatusDisplay();
-        }
-    });
-
-    window.addEventListener('offline', () => {
-        console.log('Network went offline');
-        if (!useLocalStorage) {
-            useLocalStorage = true;
-            serverStatus = 'offline';
-            updateStatusDisplay();
-        }
-    });

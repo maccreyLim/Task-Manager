@@ -5,7 +5,7 @@ const cors = require('cors');
 
 const app = express();
 const PORT = 3000;
-const DATA_FILE = path.join(__dirname, '..', 'frontend', 'bookworklist.json');
+const DATA_FILE = path.join(__dirname, 'bookworklist.json');
 
 app.use(cors());
 app.use(express.json());
