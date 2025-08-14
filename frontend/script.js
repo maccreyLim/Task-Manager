@@ -25,12 +25,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateDatetimeInput = document.getElementById('update-datetime-input');
     const progressModalCloseButton = progressUpdateModal.querySelector('.close-button');
 
+    // Notes Modal Elements
+    const notesModal = document.getElementById('notes-modal');
+    const notesModalTitle = document.getElementById('notes-modal-title');
+    const notesList = document.getElementById('notes-list');
+    const noteForm = document.getElementById('note-form');
+    const noteIdInput = document.getElementById('note-id');
+    const noteAuthorInput = document.getElementById('note-author');
+    const noteContentInput = document.getElementById('note-content');
+    const notesModalCloseButton = notesModal.querySelector('.close-button');
+
     const apiKey = 'e080d32c1a94808682a5c4fe268ba6f9e5aedf09c936f44ecb51272e59287233';
-    const API_URL = 'http://172.30.1.40:3000/books';
+            const API_URL = 'http://localhost:3000/books';
 
     let currentBook = null;
     let tasks = [];
     let currentTaskForUpdate = null;
+    let currentTaskForNotes = null;
     let serverStatus = 'unknown'; // 'online', 'offline', 'unknown'
 
     // 서버 연결 상태 확인
@@ -538,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const assignedTo = task.currentStage === 'completed' ? '-' : (task.stages[task.currentStage]?.assignedTo || '미정');
             const showAssignButton = task.currentStage !== 'completed' && !task.stages[task.currentStage]?.assignedTo;
+            const noteCount = task.notes ? task.notes.length : 0;
 
             taskItem.innerHTML = `
                 <h3 class="task-title" data-id="${task.id}" title="클릭하여 작업 히스토리 보기">${stripHtmlTags(task.book.title)}</h3>
@@ -553,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </p>
                 ${task.currentStage !== 'completed' ? `<button data-id="${task.id}" class="update-progress-button">진행 상황 업데이트</button>` : ''}
                 <button data-id="${task.id}" class="delete-task-button">삭제</button>
+                <button data-id="${task.id}" class="notes-button">특이사항 <span class="note-count">${noteCount}</span></button>
             `;
             taskList.appendChild(taskItem);
         });
@@ -585,6 +598,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const stageKey = target.dataset.stage;
             if (task) {
                 assignCorrectorFromCard(task, stageKey);
+            }
+        } else if (target.closest('.notes-button')) {
+            if (task) {
+                openNotesModal(task);
             }
         }
     });
@@ -950,4 +967,133 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStatusDisplay();
         }
     });
+
+    // Notes Modal Functions
+    function openNotesModal(task) {
+        currentTaskForNotes = task;
+        notesModalTitle.textContent = `특이사항 - ${stripHtmlTags(task.book.title)}`;
+        noteForm.reset();
+        noteIdInput.value = '';
+        loadAndRenderNotes(task.id);
+        notesModal.style.display = 'flex';
+    }
+
+    function closeNotesModal() {
+        notesModal.style.display = 'none';
+        currentTaskForNotes = null;
+    }
+
+    async function loadAndRenderNotes(taskId) {
+        try {
+            const response = await fetch(`${API_URL}/${taskId}/notes`);
+            if (!response.ok) {
+                throw new Error('특이사항을 불러오는데 실패했습니다.');
+            }
+            const notes = await response.json();
+            const task = tasks.find(t => t.id === taskId);
+            if(task) {
+                task.notes = notes;
+            }
+            renderNotes(notes, taskId);
+            renderTasks(); // Update note count on the button
+        } catch (error) {
+            console.error('Error loading notes:', error);
+            notesList.innerHTML = `<p>특이사항을 불러오는데 실패했습니다.</p>`;
+        }
+    }
+
+    function renderNotes(notes, taskId) {
+        notesList.innerHTML = '';
+        if (notes.length === 0) {
+            notesList.innerHTML = '<p>등록된 특이사항이 없습니다.</p>';
+            return;
+        }
+
+        notes.forEach(note => {
+            const noteItem = document.createElement('div');
+            noteItem.classList.add('note-item');
+            noteItem.dataset.noteId = note.noteId;
+
+            noteItem.innerHTML = `
+                <p class="note-meta"><strong>작성자:</strong> ${note.author} | <strong>작성일:</strong> ${new Date(note.createdAt).toLocaleString('ko-KR')}</p>
+                <p>${note.content}</p>
+                <div class="note-actions">
+                    <button class="edit-note-button">수정</button>
+                    <button class="delete-note-button">삭제</button>
+                </div>
+            `;
+
+            noteItem.querySelector('.edit-note-button').addEventListener('click', () => {
+                noteIdInput.value = note.noteId;
+                noteAuthorInput.value = note.author;
+                noteContentInput.value = note.content;
+            });
+
+            noteItem.querySelector('.delete-note-button').addEventListener('click', () => {
+                if (confirm('정말로 이 특이사항을 삭제하시겠습니까?')) {
+                    deleteNote(taskId, note.noteId);
+                }
+            });
+
+            notesList.appendChild(noteItem);
+        });
+    }
+
+    noteForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const taskId = currentTaskForNotes.id;
+        const noteId = noteIdInput.value;
+        const author = noteAuthorInput.value.trim();
+        const content = noteContentInput.value.trim();
+
+        if (!author || !content) {
+            alert('작성자와 내용을 모두 입력해주세요.');
+            return;
+        }
+
+        const url = noteId ? `${API_URL}/${taskId}/notes/${noteId}` : `${API_URL}/${taskId}/notes`;
+        const method = noteId ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ author, content })
+            });
+
+            if (!response.ok) {
+                throw new Error('특이사항 저장에 실패했습니다.');
+            }
+
+            noteForm.reset();
+            noteIdInput.value = '';
+            loadAndRenderNotes(taskId);
+
+        } catch (error) {
+            console.error('Error saving note:', error);
+            alert(error.message);
+        }
+    });
+
+    async function deleteNote(taskId, noteId) {
+        try {
+            const response = await fetch(`${API_URL}/${taskId}/notes/${noteId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('특이사항 삭제에 실패했습니다.');
+            }
+
+            loadAndRenderNotes(taskId);
+
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            alert(error.message);
+        }
+    }
+
+    notesModalCloseButton.addEventListener('click', closeNotesModal);
 });

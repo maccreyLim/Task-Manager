@@ -185,7 +185,27 @@
         "status": "not_applicable"
       }
     },
-    "currentStage": "correction2"
+    "currentStage": "correction2",
+    "notes": [
+      {
+        "noteId": "1755158258300",
+        "author": "임석훈",
+        "content": "질문: 답안지 받음",
+        "createdAt": "2025-08-14T07:57:38.300Z"
+      },
+      {
+        "noteId": "1755158276977",
+        "author": "임석훈",
+        "content": "체크했습니다.",
+        "createdAt": "2025-08-14T07:57:56.977Z"
+      },
+      {
+        "noteId": "1755159657779",
+        "author": "임석훈",
+        "content": "테스트",
+        "createdAt": "2025-08-14T08:20:57.779Z"
+      }
+    ]
   },
   {
     "id": "1754976981711",

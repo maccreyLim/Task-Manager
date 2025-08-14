@@ -23,12 +23,94 @@ main {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.search-section {
-    display: flex;
-    gap: 10px;
+.searching_txt {
+    background-color: yellow;
+    font-weight: bold;
+}
+
+/* Notes Modal Styles */
+#notes-modal .modal-content {
+    max-width: 700px;
+}
+
+#notes-list {
     margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.note-item {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+}
+
+.note-item p {
+    margin: 0 0 5px 0;
+}
+
+.note-item .note-meta {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.note-actions button {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    margin-right: 5px;
+    cursor: pointer;
+    border-radius: 3px;
+    border: 1px solid transparent;
+}
+
+.edit-note-button {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.delete-note-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+#note-form textarea {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.notes-button {
+    margin-top: 15px;
+    margin-left: 10px;
+    padding: 8px 12px;
+    background-color: #ffc107;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.notes-button .note-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
 }
 
 .search-section input[type="text"] {
