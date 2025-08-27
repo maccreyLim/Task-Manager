@@ -49,7 +49,13 @@
       },
       "correction3": {
         "assignedTo": "백기욱",
-        "history": [],
+        "history": [
+          {
+            "date": "2025. 8. 13. 오후 5:20:00",
+            "startPage": 1,
+            "endPage": 101
+          }
+        ],
         "status": "pending"
       },
       "transcription": {
@@ -119,7 +125,7 @@
         "status": "completed"
       },
       "correction3": {
-        "assignedTo": "",
+        "assignedTo": "김희연",
         "history": [],
         "status": "pending"
       },
@@ -170,9 +176,29 @@
             "date": "2025. 8. 12. 오후 5:45:00",
             "startPage": 55,
             "endPage": 124
+          },
+          {
+            "date": "2025. 8. 13. 오후 5:43:00",
+            "startPage": 125,
+            "endPage": 194
+          },
+          {
+            "date": "2025. 8. 14. 오후 5:31:00",
+            "startPage": 195,
+            "endPage": 264
+          },
+          {
+            "date": "2025. 8. 18. 오후 5:38:00",
+            "startPage": 265,
+            "endPage": 344
+          },
+          {
+            "date": "2025. 8. 19. 오후 3:50:00",
+            "startPage": 345,
+            "endPage": 384
           }
         ],
-        "status": "pending"
+        "status": "completed"
       },
       "correction3": {
         "assignedTo": "",
@@ -185,27 +211,8 @@
         "status": "not_applicable"
       }
     },
-    "currentStage": "correction2",
-    "notes": [
-      {
-        "noteId": "1755158258300",
-        "author": "임석훈",
-        "content": "질문: 답안지 받음",
-        "createdAt": "2025-08-14T07:57:38.300Z"
-      },
-      {
-        "noteId": "1755158276977",
-        "author": "임석훈",
-        "content": "체크했습니다.",
-        "createdAt": "2025-08-14T07:57:56.977Z"
-      },
-      {
-        "noteId": "1755159657779",
-        "author": "임석훈",
-        "content": "테스트",
-        "createdAt": "2025-08-14T08:20:57.779Z"
-      }
-    ]
+    "currentStage": "correction3",
+    "notes": []
   },
   {
     "id": "1754976981711",
@@ -235,8 +242,14 @@
         "status": "completed"
       },
       "correction2": {
-        "assignedTo": "",
-        "history": [],
+        "assignedTo": "임석훈",
+        "history": [
+          {
+            "date": "2025. 8. 26. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 71
+          }
+        ],
         "status": "pending"
       },
       "correction3": {
@@ -250,7 +263,15 @@
         "status": "not_applicable"
       }
     },
-    "currentStage": "correction2"
+    "currentStage": "correction2",
+    "notes": [
+      {
+        "noteId": "1756253071389",
+        "author": "임석훈",
+        "content": "경조사로 인해 늦어짐.\n2025.8.19 ~ 2025.08.25 까지 5일간 경조사 휴가",
+        "createdAt": "2025-08-27T00:04:31.389Z"
+      }
+    ]
   },
   {
     "id": "1754978439808",
@@ -306,9 +327,20 @@
         "status": "completed"
       },
       "correction3": {
-        "assignedTo": "",
-        "history": [],
-        "status": "pending"
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 8. 18. 오전 9:00:00",
+            "startPage": 1,
+            "endPage": 1
+          },
+          {
+            "date": "2025. 8. 18. 오전 11:33:00",
+            "startPage": 2,
+            "endPage": 192
+          }
+        ],
+        "status": "completed"
       },
       "transcription": {
         "assignedTo": "",
@@ -316,7 +348,15 @@
         "status": "not_applicable"
       }
     },
-    "currentStage": "correction3"
+    "currentStage": "completed",
+    "notes": [
+      {
+        "noteId": "1755487118674",
+        "author": "송지연",
+        "content": ")  닫는 괄호 2개 판권정보 전화번호에 쓰임",
+        "createdAt": "2025-08-18T03:18:38.674Z"
+      }
+    ]
   },
   {
     "id": "1755050512702",
@@ -351,6 +391,302 @@
             "date": "2025. 8. 6. 오전 5:45:00",
             "startPage": 1,
             "endPage": 60
+          },
+          {
+            "date": "2025. 8. 13. 오전 11:47:00",
+            "startPage": 61,
+            "endPage": 358
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "백기욱",
+        "history": [
+          {
+            "date": "2025. 8. 25. 오후 5:04:00",
+            "startPage": 1,
+            "endPage": 358
+          }
+        ],
+        "status": "completed"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "completed"
+  },
+  {
+    "id": "1755052983284",
+    "book": {
+      "title": "<span class=\"searching_txt\">소마</span>. 제1권 - 제2권",
+      "author": "강모림 글·그림",
+      "publisher": "시공사",
+      "isbn": "8952715012 8952715209 8952715020",
+      "totalPages": null
+    },
+    "totalPages": 388,
+    "stages": {
+      "correction1": {
+        "assignedTo": "백기욱",
+        "history": [
+          {
+            "date": "2025. 7. 21. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 28. 오전 5:44:00",
+            "startPage": 61,
+            "endPage": 388
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "김희연",
+        "history": [
+          {
+            "date": "2025. 8. 13. 오전 5:45:00",
+            "startPage": 1,
+            "endPage": 70
+          },
+          {
+            "date": "2025. 8. 20. 오전 5:45:00",
+            "startPage": 71,
+            "endPage": 388
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 8. 13. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 70
+          },
+          {
+            "date": "2025. 8. 22. 오후 5:16:00",
+            "startPage": 71,
+            "endPage": 140
+          },
+          {
+            "date": "2025. 8. 25. 오후 5:16:00",
+            "startPage": 141,
+            "endPage": 220
+          },
+          {
+            "date": "2025. 8. 26. 오후 1:16:00",
+            "startPage": 221,
+            "endPage": 388
+          }
+        ],
+        "status": "completed"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "completed"
+  },
+  {
+    "id": "1755057290688",
+    "book": {
+      "title": "<span class=\"searching_txt\">함께</span> <span class=\"searching_txt\">걸어갈</span> <span class=\"searching_txt\">사람이</span> <span class=\"searching_txt\">생겼습니다</span> : 비야·안톤의 실험적 생활 에세이 : 큰글자도서",
+      "author": "지은이: 한비야,안토니우스 반 주트펀",
+      "publisher": "푸른숲",
+      "isbn": "9791156758990",
+      "totalPages": null
+    },
+    "totalPages": 328,
+    "stages": {
+      "correction1": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 8. 13. 오후 12:55:00",
+            "startPage": 1,
+            "endPage": 328
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "백기욱",
+        "history": [
+          {
+            "date": "2025. 8. 13. 오후 12:55:00",
+            "startPage": 1,
+            "endPage": 328
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction3"
+  },
+  {
+    "id": "1755057862157",
+    "book": {
+      "title": "<span class=\"searching_txt\">두메별,</span> <span class=\"searching_txt\">꽃과</span> <span class=\"searching_txt\">별의</span> <span class=\"searching_txt\">이름을</span> <span class=\"searching_txt\">가진</span> <span class=\"searching_txt\">아이</span> : 범유진 장편소설",
+      "author": "범유진[1984-] 지은이",
+      "publisher": "서울 : 자음과모음, 20211025",
+      "isbn": "9788954447812",
+      "totalPages": null
+    },
+    "totalPages": 224,
+    "stages": {
+      "correction1": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 7. 23. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 28. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 224
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "윤성희",
+        "history": [
+          {
+            "date": "2025. 8. 5. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 8. 8. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 224
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction3"
+  },
+  {
+    "id": "1755058211406",
+    "book": {
+      "title": "리어 왕",
+      "author": "윌리엄 셰익스피어",
+      "publisher": "미음사",
+      "isbn": "9788937461279"
+    },
+    "totalPages": 228,
+    "stages": {
+      "correction1": {
+        "assignedTo": "윤성희",
+        "history": [
+          {
+            "date": "2025. 7. 25. 오후 1:10:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 8. 5. 오후 1:11:00",
+            "startPage": 61,
+            "endPage": 228
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "김희연",
+        "history": [
+          {
+            "date": "2025. 8. 13. 오후 1:15:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 8. 14. 오후 4:28:00",
+            "startPage": 61,
+            "endPage": 228
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction3"
+  },
+  {
+    "id": "1755058368173",
+    "book": {
+      "title": "<span class=\"searching_txt\">시지프</span> <span class=\"searching_txt\">신화</span>",
+      "author": "Camus, Albert[1913-1960] 지음 김화영[1941-] 옮김 이명상 낭독",
+      "publisher": "[서울] : 민음사, 20210601",
+      "isbn": "9788937417672",
+      "totalPages": null
+    },
+    "totalPages": 320,
+    "stages": {
+      "correction1": {
+        "assignedTo": "백기욱",
+        "history": [
+          {
+            "date": "2025. 7. 28. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 8. 6. 오후 1:13:00",
+            "startPage": 61,
+            "endPage": 320
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "윤성희",
+        "history": [
+          {
+            "date": "2025. 8. 8. 오후 1:14:00",
+            "startPage": 1,
+            "endPage": 70
           }
         ],
         "status": "pending"
@@ -366,14 +702,6 @@
         "status": "not_applicable"
       }
     },
-    "currentStage": "correction2",
-    "notes": [
-      {
-        "noteId": "1755490042326",
-        "author": "임석훈",
-        "content": "테스트",
-        "createdAt": "2025-08-18T04:07:22.326Z"
-      }
-    ]
+    "currentStage": "correction2"
   }
 ]

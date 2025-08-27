@@ -1,0 +1,379 @@
+[
+  {
+    "id": "1754976051137",
+    "book": {
+      "title": "<span class=\"searching_txt\">남극으로</span> <span class=\"searching_txt\">걸어간</span> <span class=\"searching_txt\">산책자</span>",
+      "author": "엘링 카게 지음 ;김지혜 옮김",
+      "publisher": "다른",
+      "isbn": "9791156332763",
+      "totalPages": null
+    },
+    "totalPages": 176,
+    "stages": {
+      "correction1": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 7. 10. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 15. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 176
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "임석훈",
+        "history": [
+          {
+            "date": "2025. 7. 29. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 69
+          },
+          {
+            "date": "2025. 7. 30. 오후 5:45:00",
+            "startPage": 70,
+            "endPage": 139
+          },
+          {
+            "date": "2025. 7. 31. 오후 5:45:00",
+            "startPage": 140,
+            "endPage": 176
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "백기욱",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction3"
+  },
+  {
+    "id": "1754976377495",
+    "book": {
+      "title": "<span class=\"searching_txt\">도움받는</span> <span class=\"searching_txt\">기분</span> : 백은선 시집",
+      "author": "지은이: 백은선",
+      "publisher": "문학과지성사",
+      "isbn": "9788932038292",
+      "totalPages": null
+    },
+    "totalPages": 272,
+    "stages": {
+      "correction1": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 7. 16. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 22. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 272
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "임석훈",
+        "history": [
+          {
+            "date": "2025. 7. 31. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 40
+          },
+          {
+            "date": "2025. 8. 1. 오후 5:45:00",
+            "startPage": 41,
+            "endPage": 110
+          },
+          {
+            "date": "2025. 8. 4. 오후 12:45:00",
+            "startPage": 111,
+            "endPage": 141
+          },
+          {
+            "date": "2025. 8. 5. 오후 5:45:00",
+            "startPage": 142,
+            "endPage": 213
+          },
+          {
+            "date": "2025. 8. 6. 오후 5:46:00",
+            "startPage": 214,
+            "endPage": 272
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction3"
+  },
+  {
+    "id": "1754976845592",
+    "book": {
+      "title": "<span class=\"searching_txt\">설민석의</span> <span class=\"searching_txt\">삼국지</span> : 지금, 심플하게 <라이트 에디션>.<span class=\"searching_txt\">1</span>, 답답한 세상, 희망을 꿈꾸다",
+      "author": "<span class=\"searching_txt\">설민석</span>[<span class=\"searching_txt\">1</span>970-] 지은이",
+      "publisher": "서울 : 세계사(세계사컨텐츠그룹), 20200624",
+      "isbn": "9788933871522",
+      "totalPages": null
+    },
+    "totalPages": 384,
+    "stages": {
+      "correction1": {
+        "assignedTo": "김희연",
+        "history": [
+          {
+            "date": "2025. 7. 25. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 8. 4. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 384
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "임석훈",
+        "history": [
+          {
+            "date": "2025. 8. 11. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 54
+          },
+          {
+            "date": "2025. 8. 12. 오후 5:45:00",
+            "startPage": 55,
+            "endPage": 124
+          }
+        ],
+        "status": "pending"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction2",
+    "notes": [
+      {
+        "noteId": "1755158258300",
+        "author": "임석훈",
+        "content": "질문: 답안지 받음",
+        "createdAt": "2025-08-14T07:57:38.300Z"
+      },
+      {
+        "noteId": "1755158276977",
+        "author": "임석훈",
+        "content": "체크했습니다.",
+        "createdAt": "2025-08-14T07:57:56.977Z"
+      },
+      {
+        "noteId": "1755159657779",
+        "author": "임석훈",
+        "content": "테스트",
+        "createdAt": "2025-08-14T08:20:57.779Z"
+      }
+    ]
+  },
+  {
+    "id": "1754976981711",
+    "book": {
+      "title": "<span class=\"searching_txt\">설민석의</span> <span class=\"searching_txt\">삼국지</span> : 지금, 심플하게 <라이트 에디션>.<span class=\"searching_txt\">2</span>, 혼란한 세상, 끝까지 맞서다",
+      "author": "<span class=\"searching_txt\">설민석</span>[1970-] 지은이",
+      "publisher": "서울 : 세계사(세계사컨텐츠그룹), <span class=\"searching_txt\">2</span>0<span class=\"searching_txt\">2</span>006<span class=\"searching_txt\">2</span>4",
+      "isbn": "9788933871539",
+      "totalPages": null
+    },
+    "totalPages": 384,
+    "stages": {
+      "correction1": {
+        "assignedTo": "김희연",
+        "history": [
+          {
+            "date": "2025. 8. 5. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 8. 12. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 384
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction2"
+  },
+  {
+    "id": "1754978439808",
+    "book": {
+      "title": "<span class=\"searching_txt\">구의</span> <span class=\"searching_txt\">증명</span>",
+      "author": "최진영 지음",
+      "publisher": "은행나무",
+      "isbn": "9791167372864",
+      "totalPages": null
+    },
+    "totalPages": 192,
+    "stages": {
+      "correction1": {
+        "assignedTo": "김희연",
+        "history": [
+          {
+            "date": "2025. 7. 23. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 25. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 192
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "임석훈",
+        "history": [
+          {
+            "date": "2025. 8. 6. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 12
+          },
+          {
+            "date": "2025. 8. 7. 오후 5:45:00",
+            "startPage": 13,
+            "endPage": 82
+          },
+          {
+            "date": "2025. 8. 8. 오후 5:44:00",
+            "startPage": 83,
+            "endPage": 162
+          },
+          {
+            "date": "2025. 8. 11. 오후 5:45:00",
+            "startPage": 163,
+            "endPage": 192
+          }
+        ],
+        "status": "completed"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction3"
+  },
+  {
+    "id": "1755050512702",
+    "book": {
+      "title": "고구려 7: 동백과 한란",
+      "author": "김진명",
+      "publisher": "이타",
+      "isbn": "9791197063275"
+    },
+    "totalPages": 358,
+    "stages": {
+      "correction1": {
+        "assignedTo": "윤성희",
+        "history": [
+          {
+            "date": "2025. 7. 17. 오후 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          },
+          {
+            "date": "2025. 7. 25. 오후 5:45:00",
+            "startPage": 61,
+            "endPage": 358
+          }
+        ],
+        "status": "completed"
+      },
+      "correction2": {
+        "assignedTo": "송지연",
+        "history": [
+          {
+            "date": "2025. 8. 6. 오전 5:45:00",
+            "startPage": 1,
+            "endPage": 60
+          }
+        ],
+        "status": "pending"
+      },
+      "correction3": {
+        "assignedTo": "",
+        "history": [],
+        "status": "pending"
+      },
+      "transcription": {
+        "assignedTo": "",
+        "history": [],
+        "status": "not_applicable"
+      }
+    },
+    "currentStage": "correction2",
+    "notes": [
+      {
+        "noteId": "1755490042326",
+        "author": "임석훈",
+        "content": "테스트",
+        "createdAt": "2025-08-18T04:07:22.326Z"
+      }
+    ]
+  }
+]
