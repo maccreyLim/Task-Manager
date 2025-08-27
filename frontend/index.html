@@ -15,7 +15,8 @@
             <input type="text" id="isbn-title-input" placeholder="ISBN 또는 책 제목 입력">
             <button id="search-button">검색</button>
             <button id="add-new-button">신규 등록</button>
-            <button id="reset-data-button">로컬 데이터 리셋</button>
+            <button id="completed-books-button" class="completed-button">완료된 도서</button>
+            <button id="admin-mode-button" class="admin-button">관리자모드</button>
         </section>
 
         <section class="dashboard-section">
@@ -68,6 +69,258 @@
                 <label for="update-datetime-input">작업 날짜 및 시간:</label>
                 <input type="datetime-local" id="update-datetime-input">
                 <button type="submit">업데이트</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="book-selection-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>검색 결과 선택</h2>
+            <p>여러 개의 검색 결과가 있습니다. 등록할 도서를 선택해주세요:</p>
+            <div id="book-selection-list" class="book-selection-list">
+                <!-- 검색된 도서 목록이 여기에 동적으로 추가됩니다. -->
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-panel-modal" class="modal">
+        <div class="modal-content admin-panel">
+            <span class="close-button">&times;</span>
+            <h2>관리자 패널</h2>
+            
+            <div class="admin-tabs">
+                <button class="tab-button active" data-tab="tasks">작업 관리</button>
+                <button class="tab-button" data-tab="data">데이터 관리</button>
+                <button class="tab-button" data-tab="stats">통계</button>
+            </div>
+
+            <div id="admin-tab-tasks" class="tab-content active">
+                <div class="admin-toolbar">
+                    <button id="refresh-tasks-btn" class="small-btn">새로고침</button>
+                    <button id="export-tasks-btn" class="small-btn">내보내기</button>
+                </div>
+                <div class="admin-table-container">
+                    <table id="admin-tasks-table" class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>제목</th>
+                                <th>저자</th>
+                                <th>현재 단계</th>
+                                <th>진행률</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-tasks-tbody">
+                            <!-- 작업 목록이 동적으로 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="admin-tab-data" class="tab-content">
+                <div class="admin-data-section">
+                    <h3>데이터베이스 관리</h3>
+                    <div class="admin-buttons">
+                        <button id="backup-data-btn" class="admin-btn backup">데이터 백업</button>
+                        <button id="restore-data-btn" class="admin-btn restore">데이터 복원</button>
+                        <button id="clear-all-data-btn" class="admin-btn danger">전체 데이터 삭제</button>
+                    </div>
+                    <input type="file" id="restore-file-input" style="display: none;" accept=".json">
+                    
+                    <h3>데이터 정보</h3>
+                    <div id="data-info" class="data-info">
+                        <!-- 데이터 정보가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-tab-stats" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>총 작업 수</h3>
+                        <div class="stat-value" id="total-tasks">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>완료된 작업</h3>
+                        <div class="stat-value" id="completed-tasks">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>진행 중인 작업</h3>
+                        <div class="stat-value" id="in-progress-tasks">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>평균 진행률</h3>
+                        <div class="stat-value" id="avg-progress">0%</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>단계별 작업 분포</h3>
+                    <div id="stage-distribution" class="stage-chart">
+                        <!-- 단계별 차트가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="task-detail-modal" class="modal">
+        <div class="modal-content task-detail">
+            <span class="close-button">&times;</span>
+            <h2 id="task-detail-title">작업 상세 정보</h2>
+            
+            <div class="task-detail-tabs">
+                <button class="detail-tab-button active" data-tab="info">기본 정보</button>
+                <button class="detail-tab-button" data-tab="stages">작업 단계</button>
+                <button class="detail-tab-button" data-tab="history">진행 기록</button>
+            </div>
+
+            <div id="task-detail-info" class="detail-tab-content active">
+                <form id="task-detail-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="detail-title">제목:</label>
+                            <input type="text" id="detail-title" name="title">
+                        </div>
+                        <div class="form-group">
+                            <label for="detail-author">저자:</label>
+                            <input type="text" id="detail-author" name="author">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="detail-publisher">출판사:</label>
+                            <input type="text" id="detail-publisher" name="publisher">
+                        </div>
+                        <div class="form-group">
+                            <label for="detail-isbn">ISBN:</label>
+                            <input type="text" id="detail-isbn" name="isbn">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="detail-total-pages">총 페이지:</label>
+                            <input type="number" id="detail-total-pages" name="totalPages" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="detail-current-stage">현재 단계:</label>
+                            <select id="detail-current-stage" name="currentStage">
+                                <option value="correction1">1차 교정</option>
+                                <option value="correction2">2차 교정</option>
+                                <option value="correction3">3차 교정</option>
+                                <option value="transcription">점역</option>
+                                <option value="completed">완료</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="task-detail-stages" class="detail-tab-content">
+                <div class="stages-container">
+                    <div class="stage-section">
+                        <h4>1차 교정</h4>
+                        <div class="stage-info">
+                            <label>담당자: <input type="text" id="corrector1-assigned" class="stage-input"></label>
+                            <label>진행 페이지: <span id="corrector1-progress">0</span></label>
+                        </div>
+                    </div>
+                    
+                    <div class="stage-section">
+                        <h4>2차 교정</h4>
+                        <div class="stage-info">
+                            <label>담당자: <input type="text" id="corrector2-assigned" class="stage-input"></label>
+                            <label>진행 페이지: <span id="corrector2-progress">0</span></label>
+                        </div>
+                    </div>
+                    
+                    <div class="stage-section">
+                        <h4>3차 교정</h4>
+                        <div class="stage-info">
+                            <label>담당자: <input type="text" id="corrector3-assigned" class="stage-input"></label>
+                            <label>진행 페이지: <span id="corrector3-progress">0</span></label>
+                        </div>
+                    </div>
+                    
+                    <div class="stage-section">
+                        <h4>점역</h4>
+                        <div class="stage-info">
+                            <label>담당자: <input type="text" id="transcriber-assigned" class="stage-input"></label>
+                            <label>진행 페이지: <span id="transcriber-progress">0</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="task-detail-history" class="detail-tab-content">
+                <div id="history-container">
+                    <!-- 진행 기록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <div class="task-detail-actions">
+                <button id="save-task-detail" class="action-btn save-btn">저장</button>
+                <button id="delete-task-detail" class="action-btn delete-btn">삭제</button>
+                <button id="cancel-task-detail" class="action-btn cancel-btn">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="completed-books-modal" class="modal">
+        <div class="modal-content completed-books">
+            <span class="close-button">&times;</span>
+            <h2>완료된 도서 목록</h2>
+            
+            <div class="completed-stats">
+                <div class="stat-item">
+                    <span class="stat-label">총 완료 작업:</span>
+                    <span id="completed-count" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <div class="completed-toolbar">
+                <div class="export-buttons">
+                    <button id="export-completed-btn" class="small-btn">완료 목록 내보내기</button>
+                    <button id="export-in-progress-btn" class="small-btn">진행 목록 내보내기</button>
+                </div>
+                <input type="text" id="completed-search" placeholder="완료된 도서 검색..." class="search-input">
+            </div>
+            
+            <div class="completed-table-container">
+                <table class="completed-table">
+                    <thead>
+                        <tr>
+                            <th>제목</th>
+                            <th>저자</th>
+                            <th>총 페이지</th>
+                            <th>완료일</th>
+                        </tr>
+                    </thead>
+                    <tbody id="completed-books-tbody">
+                        <!-- 완료된 도서 목록이 여기에 표시됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="password-modal" class="modal">
+        <div class="modal-content password-modal">
+            <span class="close-button">&times;</span>
+            <h2>관리자 인증</h2>
+            <form id="password-form">
+                <div class="password-field">
+                    <label for="admin-password">비밀번호를 입력하세요:</label>
+                    <input type="password" id="admin-password" required autofocus>
+                </div>
+                <div class="password-actions">
+                    <button type="submit" class="password-btn login-btn">확인</button>
+                    <button type="button" class="password-btn cancel-btn" id="password-cancel">취소</button>
+                </div>
             </form>
         </div>
     </div>
