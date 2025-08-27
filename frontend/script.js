@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesModalCloseButton = notesModal.querySelector('.close-button');
 
     const apiKey = 'e080d32c1a94808682a5c4fe268ba6f9e5aedf09c936f44ecb51272e59287233';
-            const API_URL = 'http://172.30.1.40:3000/books';
+            const API_URL = 'https://task-manager-backend-ozmt.onrender.com/books';
 
     let currentBook = null;
     let tasks = [];
