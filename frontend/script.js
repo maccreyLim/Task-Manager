@@ -52,8 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                signal: AbortSignal.timeout(5000) // 5초 타임아웃
+                }
             });
             
             if (response.ok) {
