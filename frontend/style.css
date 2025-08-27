@@ -113,6 +113,16 @@ main {
     font-weight: bold;
 }
 
+.notes-button.inactive {
+    background-color: #ccc;
+    color: #666;
+    cursor: default;
+}
+
+.notes-button.inactive .note-count {
+    display: none;
+}
+
 .search-section input[type="text"] {
     flex-grow: 1;
     padding: 10px;

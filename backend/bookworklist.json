@@ -366,6 +366,14 @@
         "status": "not_applicable"
       }
     },
-    "currentStage": "correction2"
+    "currentStage": "correction2",
+    "notes": [
+      {
+        "noteId": "1755490042326",
+        "author": "임석훈",
+        "content": "테스트",
+        "createdAt": "2025-08-18T04:07:22.326Z"
+      }
+    ]
   }
 ]
