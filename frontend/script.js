@@ -504,10 +504,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const savedTask = await saveTask(newTask, true);
             
-            // 로컬 배열에 새 작업 추가
-            tasks.push(savedTask);
+            // 데이터 목록을 다시 로드하여 화면을 갱신
+            await loadTasks();
 
-            renderTasks();
             closeModal();
             
             alert('새 작업이 등록되었습니다.');
